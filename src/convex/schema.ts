@@ -28,13 +28,14 @@ const schema = defineSchema(
       email: v.optional(v.string()), // email of the user. do not remove
       emailVerificationTime: v.optional(v.number()), // email verification time. do not remove
       isAnonymous: v.optional(v.boolean()), // is the user anonymous. do not remove
+      walletAddress: v.optional(v.string()), // User's wallet address
 
       role: v.optional(roleValidator), // role of the user. do not remove
       
       // Custom fields for the app
       patBalance: v.optional(v.number()),
       aptBalance: v.optional(v.number()),
-    }).index("email", ["email"]), // index for the email. do not remove or modify
+    }).index("email", ["email"]).index("by_walletAddress", ["walletAddress"]), // index for the email. do not remove or modify
 
     bounties: defineTable({
       contentUrl: v.string(),

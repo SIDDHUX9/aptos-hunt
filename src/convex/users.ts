@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, QueryCtx } from "./_generated/server";
+import { query, mutation, QueryCtx } from "./_generated/server";
+import { v } from "convex/values";
 
 /**
  * Get the current signed in user. Returns null if the user is not signed in.
@@ -16,6 +17,18 @@ export const currentUser = query({
     }
 
     return user;
+  },
+});
+
+export const setWalletAddress = mutation({
+  args: { walletAddress: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
+    await ctx.db.patch(userId, {
+      walletAddress: args.walletAddress,
+    });
   },
 });
 
