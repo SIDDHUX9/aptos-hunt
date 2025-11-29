@@ -26,6 +26,21 @@ const config = new AptosConfig({
 
 export const aptos = new Aptos(config);
 
+// Helper to check if the contract exists
+export const checkContract = async (): Promise<boolean> => {
+  try {
+    console.log(`Checking for module: ${MODULE_ADDRESS}::${MODULE_NAME}`);
+    const moduleData = await aptos.getAccountModule({
+      accountAddress: MODULE_ADDRESS,
+      moduleName: MODULE_NAME,
+    });
+    return !!moduleData;
+  } catch (error) {
+    console.error("Contract check failed:", error);
+    return false;
+  }
+};
+
 // Helper to fund account (Testnet only)
 export const fundAccount = async (address: string, amount: number) => {
   try {

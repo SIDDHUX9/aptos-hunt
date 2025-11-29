@@ -12,20 +12,59 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { getYoutubeThumbnail, isYoutubeUrl } from "@/lib/utils";
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
-import { MODULE_ADDRESS, MODULE_NAME, aptos } from "@/lib/aptos";
+import { MODULE_ADDRESS, MODULE_NAME, aptos, checkContract } from "@/lib/aptos";
+import { Network } from "@aptos-labs/ts-sdk";
+import { AlertTriangle } from "lucide-react";
 
 export default function CreateBounty() {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contractExists, setContractExists] = useState<boolean | null>(null);
   const createBounty = useMutation(api.bounties.create);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // @ts-ignore
-  const { signAndSubmitTransaction, account, connected } = useWallet();
+  const { signAndSubmitTransaction, account, connected, network, changeNetwork } = useWallet();
+
+  // Check if contract exists on load
+  useState(() => {
+    checkContract().then(exists => setContractExists(exists));
+  });
+
+  const isWrongNetwork = network && (
+    (network.name && !network.name.toLowerCase().includes("testnet")) && 
+    network.chainId?.toString() !== "2"
+  );
+
+  const handleSwitchNetwork = async () => {
+    try {
+      if (changeNetwork) {
+        await changeNetwork(Network.TESTNET);
+      }
+    } catch (error) {
+      toast.error("Please switch to Testnet manually");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
+    
+    if (isWrongNetwork) {
+        toast.error("Wrong Network", {
+            description: "Please switch to Aptos Testnet to create a bounty.",
+            action: { label: "Switch", onClick: handleSwitchNetwork }
+        });
+        return;
+    }
+
+    if (contractExists === false) {
+        toast.error("Contract Not Found", {
+            description: "The smart contract address in src/lib/aptos.ts seems incorrect. Did you redeploy?"
+        });
+        return;
+    }
+
     await processBountyCreation(url);
   };
 
@@ -38,6 +77,7 @@ export default function CreateBounty() {
     setIsSubmitting(true);
     try {
       toast.info("Creating market on Aptos Blockchain...");
+      console.log(`Submitting to: ${MODULE_ADDRESS}::${MODULE_NAME}::create_market`);
       
       // 1. Create Market on Chain
       const transaction: InputTransactionData = {
@@ -49,6 +89,7 @@ export default function CreateBounty() {
       };
 
       const response = await signAndSubmitTransaction(transaction);
+      console.log("Transaction submitted:", response.hash);
       toast.loading("Waiting for transaction confirmation...", { duration: 5000 });
       
       let committedTxn;
@@ -69,12 +110,25 @@ export default function CreateBounty() {
         if (committedTxn.events) {
           // @ts-ignore
           for (const event of committedTxn.events) {
-            if ((event.type.includes("MarketCreatedEvent") || event.data?.market_id) && event.data?.market_id) {
-               marketId = Number(event.data.market_id);
-               break;
+            if ((event.type && event.type.includes("MarketCreatedEvent")) || (event.data && event.data.market_id)) {
+               if (event.data && event.data.market_id) {
+                   marketId = Number(event.data.market_id);
+                   break;
+               }
             }
           }
         }
+        
+        // Fallback: Check changes if not found in events
+        if (marketId === undefined && (committedTxn as any).changes) {
+             for (const change of (committedTxn as any).changes) {
+                if (change.data && change.data.data && change.data.data.market_id) {
+                    marketId = Number(change.data.data.market_id);
+                    break;
+                }
+             }
+        }
+
       } catch (error: any) {
         console.error("Transaction confirmation failed:", error);
         // If it's a JSON parse error (Unauthorized) or 401, we assume success but can't read events
@@ -160,6 +214,21 @@ export default function CreateBounty() {
         >
           <h1 className="text-4xl font-black uppercase mb-8">Create New Bounty</h1>
           
+          {contractExists === false && (
+            <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-6 flex items-start gap-3">
+                <AlertTriangle className="w-6 h-6 shrink-0" />
+                <div>
+                    <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
+                    <p className="text-sm mb-2">
+                        The contract at <code>{MODULE_ADDRESS}</code> could not be found on Aptos Testnet.
+                    </p>
+                    <p className="text-sm font-bold">
+                        Did you redeploy? Please update <code>src/lib/aptos.ts</code> with your new address.
+                    </p>
+                </div>
+            </div>
+          )}
+
           <NeoCard>
             {!connected ? (
               <div className="text-center py-8">
@@ -172,6 +241,13 @@ export default function CreateBounty() {
               </div>
             ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {isWrongNetwork && (
+                <div className="bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-3 text-sm font-bold flex justify-between items-center">
+                    <span>⚠️ You are on the wrong network.</span>
+                    <NeoButton size="sm" type="button" onClick={handleSwitchNetwork}>Switch to Testnet</NeoButton>
+                </div>
+              )}
+              
               <div>
                 <label className="block font-bold uppercase mb-2">Content URL</label>
                 <div className="flex gap-2">
@@ -229,7 +305,7 @@ export default function CreateBounty() {
                 </div>
               </div>
 
-              <NeoButton type="submit" className="w-full" disabled={isSubmitting || !url}>
+              <NeoButton type="submit" className="w-full" disabled={isSubmitting || !url || !!isWrongNetwork || contractExists === false}>
                 {isSubmitting ? "Processing On-Chain..." : "Create Bounty & Earn 10 PAT"}
               </NeoButton>
             </form>
