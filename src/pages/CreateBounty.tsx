@@ -44,7 +44,7 @@ export default function CreateBounty() {
         data: {
           function: `${MODULE_ADDRESS}::${MODULE_NAME}::create_market`,
           typeArguments: [],
-          functionArguments: [contentUrl],
+          functionArguments: [contentUrl, "86400"], // 24 hours in seconds
         },
       };
 

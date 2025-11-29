@@ -62,7 +62,7 @@ Once deployed, you need to update the frontend to point to your new contract add
 
 ## Contract Functions
 
-- `create_market(content_hash: String)`: Initializes a new prediction market.
+- `create_market(content_hash: String, duration: u64)`: Initializes a new prediction market.
 - `place_bet(market_id: u64, amount: u64, is_real: bool)`: Stakes APT on an outcome.
 - `resolve_market(market_id: u64, is_real: bool)`: **Admin Only**. Resolves the market (called by Veritas Oracle).
 - `claim_reward(market_id: u64)`: Winners call this to withdraw their share of the pool.
