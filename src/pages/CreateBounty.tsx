@@ -53,6 +53,12 @@ export default function CreateBounty() {
       
       const committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
       
+      // @ts-ignore
+      if (!committedTxn.success) {
+        // @ts-ignore
+        throw new Error(`Transaction failed: ${committedTxn.vm_status}`);
+      }
+
       // Attempt to extract marketId from events
       // We look for any event that has a `market_id` field
       let marketId: number | undefined = undefined;
@@ -61,6 +67,13 @@ export default function CreateBounty() {
       if (committedTxn.events) {
         // @ts-ignore
         for (const event of committedTxn.events) {
+          // Check for the specific event type if possible, or just look for the field
+          // The event type is usually: address::module::EventName
+          if (event.type.includes("MarketCreatedEvent") && event.data && event.data.market_id) {
+             marketId = Number(event.data.market_id);
+             break;
+          }
+          // Fallback for generic matching
           if (event.data && event.data.market_id) {
             marketId = Number(event.data.market_id);
             break;
@@ -89,8 +102,8 @@ export default function CreateBounty() {
       
       navigate(`/bounty/${bountyId}`);
     } catch (error: any) {
-      toast.error("Failed to create bounty");
       console.error(error);
+      toast.error("Failed to create bounty: " + (error.message || "Unknown error"));
       if (error.message && error.message.includes("rejected")) {
         toast.error("Transaction rejected by user");
       }

@@ -1,1 +1,1 @@
-pnpm add @aptos-labs/wallet-adapter-react petra-plugin-wallet-adapter && rm -f bash
+find . -name "DeepfakeMarket.move"
