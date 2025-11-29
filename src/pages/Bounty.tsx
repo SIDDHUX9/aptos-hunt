@@ -1,55 +1,74 @@
 import { Navbar } from "@/components/Navbar";
 import { NeoButton, NeoCard, NeoBadge } from "@/components/NeoComponents";
-import { getBounty, placeBet, resolveBounty, photon } from "@/lib/mock-aptos";
 import { useParams, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function BountyPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [bounty, setBounty] = useState(getBounty(Number(id)));
+  
+  // Convex hooks
+  const bounty = useQuery(api.bounties.get, { id: id as Id<"bounties"> });
+  const placeBetMutation = useMutation(api.bounties.placeBet);
+  const resolveBountyMutation = useMutation(api.bounties.resolve);
+
   const [betAmount, setBetAmount] = useState("1");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!bounty) {
+    if (bounty === null) {
       navigate("/dashboard");
     }
   }, [bounty, navigate]);
 
-  if (!bounty) return null;
+  if (!bounty) return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
 
-  const handleBet = (side: boolean) => {
-    placeBet(bounty.id, side, Number(betAmount));
-    setBounty({ ...bounty, realPool: side ? bounty.realPool + Number(betAmount) : bounty.realPool, aiPool: !side ? bounty.aiPool + Number(betAmount) : bounty.aiPool });
-    toast.success(`Bet placed on ${side ? "REAL" : "AI"}`, {
-      description: `${betAmount} APT deducted from wallet`
-    });
-    photon.trackEvent('bet_placed', { amount: betAmount });
+  const handleBet = async (side: boolean) => {
+    try {
+      await placeBetMutation({
+        bountyId: bounty._id,
+        amount: Number(betAmount),
+        isReal: side
+      });
+      
+      toast.success(`Bet placed on ${side ? "REAL" : "AI"}`, {
+        description: `${betAmount} APT deducted from wallet`
+      });
+    } catch (error) {
+      toast.error("Failed to place bet");
+      console.error(error);
+    }
   };
 
   const handleSimulateVerification = () => {
     setIsVerifying(true);
     
     // Simulate 2 second delay
-    setTimeout(() => {
+    setTimeout(async () => {
       const isReal = Math.random() > 0.5;
-      resolveBounty(bounty.id, isReal);
-      setVerificationResult(isReal);
-      setBounty({ ...bounty, isResolved: true, isReal, status: isReal ? "verified_real" : "verified_ai" });
-      setIsVerifying(false);
       
-      if (isReal) {
-        toast.success("Shelby Verdict: REAL", { description: "Winners have been paid out!" });
-      } else {
-        toast.error("Shelby Verdict: AI GENERATED", { description: "Winners have been paid out!" });
+      try {
+        await resolveBountyMutation({
+          bountyId: bounty._id,
+          isReal
+        });
+        
+        if (isReal) {
+          toast.success("Shelby Verdict: REAL", { description: "Winners have been paid out!" });
+        } else {
+          toast.error("Shelby Verdict: AI GENERATED", { description: "Winners have been paid out!" });
+        }
+      } catch (error) {
+        toast.error("Failed to resolve bounty");
+      } finally {
+        setIsVerifying(false);
       }
-      
-      photon.trackEvent('prediction_won', { bounty_id: bounty.id });
     }, 2000);
   };
 
@@ -64,7 +83,7 @@ export default function BountyPage() {
           </NeoButton>
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <h1 className="text-4xl font-black uppercase">Bounty #{bounty.id}</h1>
+            <h1 className="text-4xl font-black uppercase">Bounty #{bounty._id.slice(-4)}</h1>
             <NeoBadge 
               variant={bounty.status === 'pending' ? 'warning' : bounty.status === 'verified_real' ? 'success' : 'danger'}
               className="text-lg px-4 py-1"

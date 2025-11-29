@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { NeoButton, NeoCard, NeoBadge } from "@/components/NeoComponents";
-import { getBounties, photon } from "@/lib/mock-aptos";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import { Trophy, Plus, Clock, AlertTriangle } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const bounties = getBounties();
+  const bounties = useQuery(api.bounties.list);
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,7 +29,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-muted-foreground">PAT Balance</p>
-                  <p className="text-3xl font-black text-primary">{photon.getPoints()} PAT</p>
+                  <p className="text-3xl font-black text-primary">{user?.patBalance || 0} PAT</p>
                 </div>
                 <Link to="/create-bounty">
                   <NeoButton className="w-full mt-4">
@@ -54,15 +55,20 @@ export default function Dashboard() {
             <h1 className="text-4xl font-black uppercase mb-8">Active Bounties</h1>
             
             <div className="grid gap-6">
-              {bounties.map((bounty) => (
+              {bounties === undefined ? (
+                 <div className="text-center py-10">Loading bounties...</div>
+              ) : bounties.length === 0 ? (
+                 <div className="text-center py-10">No active bounties found. Create one!</div>
+              ) : (
+                bounties.map((bounty) => (
                 <motion.div
-                  key={bounty.id}
+                  key={bounty._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link to={`/bounty/${bounty.id}`}>
+                  <Link to={`/bounty/${bounty._id}`}>
                     <NeoCard className="group cursor-pointer hover:bg-accent/5 transition-colors">
                       <div className="flex flex-col md:flex-row gap-4">
                         <div className="w-full md:w-48 h-32 bg-gray-200 border-2 border-black overflow-hidden relative">
@@ -75,7 +81,7 @@ export default function Dashboard() {
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold">Bounty #{bounty.id}</h3>
+                            <h3 className="text-xl font-bold">Bounty #{bounty._id.slice(-4)}</h3>
                             <div className="flex items-center text-sm font-bold text-muted-foreground">
                               <Clock className="w-4 h-4 mr-1" />
                               {Math.max(0, Math.ceil((bounty.deadline - Date.now()) / 3600000))}h left
@@ -101,7 +107,7 @@ export default function Dashboard() {
                     </NeoCard>
                   </Link>
                 </motion.div>
-              ))}
+              )))}
             </div>
           </div>
 

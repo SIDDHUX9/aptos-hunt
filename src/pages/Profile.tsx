@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
 import { useAuth } from "@/hooks/use-auth";
-import { photon } from "@/lib/mock-aptos";
 import { useParams } from "react-router";
 import { User, Copy, Wallet, Award } from "lucide-react";
 import { toast } from "sonner";
@@ -36,7 +35,7 @@ export default function Profile() {
               <Award className="w-5 h-5" />
               <h3 className="font-bold uppercase">Total Earnings</h3>
             </div>
-            <p className="text-3xl font-black">{photon.getPoints()} PAT</p>
+            <p className="text-3xl font-black">{user?.patBalance || 0} PAT</p>
           </NeoCard>
           
           <NeoCard className="bg-secondary/20">
@@ -44,7 +43,7 @@ export default function Profile() {
               <Wallet className="w-5 h-5" />
               <h3 className="font-bold uppercase">APT Balance</h3>
             </div>
-            <p className="text-3xl font-black">145.5 APT</p>
+            <p className="text-3xl font-black">{user?.aptBalance || 0} APT</p>
           </NeoCard>
 
           <NeoCard className="bg-accent/20">

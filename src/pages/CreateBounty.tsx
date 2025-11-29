@@ -1,33 +1,38 @@
 import { Navbar } from "@/components/Navbar";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
-import { createBounty, photon } from "@/lib/mock-aptos";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Upload, Link as LinkIcon } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function CreateBounty() {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const createBounty = useMutation(api.bounties.create);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
 
     setIsSubmitting(true);
     
-    // Simulate network request
-    setTimeout(() => {
-      const newBounty = createBounty(url, "0xUser");
-      photon.trackEvent('bounty_created', { bounty_id: newBounty.id });
+    try {
+      const bountyId = await createBounty({ contentUrl: url });
       
       toast.success("Bounty Created!", {
         description: "10 PAT reward added to your balance."
       });
       
-      navigate(`/bounty/${newBounty.id}`);
-    }, 1000);
+      navigate(`/bounty/${bountyId}`);
+    } catch (error) {
+      toast.error("Failed to create bounty");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

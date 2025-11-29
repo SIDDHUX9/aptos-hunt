@@ -30,14 +30,29 @@ const schema = defineSchema(
       isAnonymous: v.optional(v.boolean()), // is the user anonymous. do not remove
 
       role: v.optional(roleValidator), // role of the user. do not remove
+      
+      // Custom fields for the app
+      patBalance: v.optional(v.number()),
+      aptBalance: v.optional(v.number()),
     }).index("email", ["email"]), // index for the email. do not remove or modify
 
-    // add other tables here
+    bounties: defineTable({
+      contentUrl: v.string(),
+      creatorId: v.id("users"),
+      deadline: v.number(),
+      status: v.union(v.literal("pending"), v.literal("verified_real"), v.literal("verified_ai")),
+      realPool: v.number(),
+      aiPool: v.number(),
+      isResolved: v.boolean(),
+      isReal: v.optional(v.boolean()),
+    }).index("by_status", ["status"]),
 
-    // tableName: defineTable({
-    //   ...
-    //   // table fields
-    // }).index("by_field", ["field"])
+    bets: defineTable({
+      bountyId: v.id("bounties"),
+      userId: v.id("users"),
+      amount: v.number(),
+      isReal: v.boolean(), // true = Real, false = AI
+    }).index("by_bounty", ["bountyId"]).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,
