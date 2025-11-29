@@ -37,6 +37,7 @@ export default function BountyPage() {
   const [veritasLogs, setVeritasLogs] = useState<string[]>([]);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualId, setManualId] = useState("");
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   useEffect(() => {
     if (bounty === null) {
@@ -72,36 +73,70 @@ export default function BountyPage() {
   const handleSyncMarket = async () => {
     if (!bounty?.creationTxnHash) return;
     setIsSyncing(true);
+    setDebugInfo("");
     try {
       toast.info("Fetching transaction details from chain...");
       const txn = await aptos.getTransactionByHash({ transactionHash: bounty.creationTxnHash });
       
+      setDebugInfo(JSON.stringify(txn, null, 2));
+
+      // @ts-ignore
+      if (txn.vm_status && txn.vm_status !== "Executed successfully") {
+         // @ts-ignore
+         toast.error(`Transaction Failed on Chain: ${txn.vm_status}`);
+         return;
+      }
+      
       let foundMarketId: number | undefined;
       
+      // 1. Search Events
       // @ts-ignore
       if (txn.events) {
         // @ts-ignore
         for (const event of txn.events) {
+           // Check for standard event structure
            if ((event.type && event.type.includes("MarketCreatedEvent")) || (event.data && event.data.market_id)) {
               if (event.data && event.data.market_id) {
                 foundMarketId = Number(event.data.market_id);
                 break;
               }
            }
+           // Check for flattened structure or other variations
+           if (event.data && event.data.id) {
+               // Heuristic: if it looks like a small integer, might be it
+               const id = Number(event.data.id);
+               if (!isNaN(id) && id < 1000000) {
+                   foundMarketId = id;
+                   break;
+               }
+           }
         }
+      }
+
+      // 2. Search Changes (Write Set) if not found in events
+      if (foundMarketId === undefined && (txn as any).changes) {
+         for (const change of (txn as any).changes) {
+            // Look for resource creation that might contain market_id
+            if (change.data && change.data.data && change.data.data.market_id) {
+                foundMarketId = Number(change.data.data.market_id);
+                break;
+            }
+         }
       }
 
       if (foundMarketId !== undefined) {
         await updateMarketId({ bountyId: bounty._id, marketId: foundMarketId });
         toast.success("Market ID Synced Successfully!", { description: `Market ID: ${foundMarketId}` });
+        setShowManualInput(false);
       } else {
         toast.error("Could not find Market ID in transaction logs.");
-        console.log("Transaction Data:", txn);
+        setShowManualInput(true); // Auto open manual input
       }
 
     } catch (error: any) {
       console.error("Sync failed:", error);
       toast.error("Failed to sync market: " + (error.message || "Unknown error"));
+      setDebugInfo(JSON.stringify(error, null, 2));
     } finally {
       setIsSyncing(false);
     }
@@ -270,31 +305,49 @@ export default function BountyPage() {
                 </div>
                 
                 {showManualInput && (
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-2 mt-2 border-t border-yellow-600/20 pt-2">
-                        <p className="text-xs md:text-sm">
-                            1. Find <strong>market_id</strong> in events on Explorer.<br/>
-                            2. Enter ID below.
-                        </p>
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                            <input 
-                                type="number" 
-                                placeholder="Market ID" 
-                                className="border-2 border-yellow-600 p-1 px-2 rounded-none text-sm w-24"
-                                value={manualId}
-                                onChange={(e) => setManualId(e.target.value)}
-                            />
-                            <NeoButton size="sm" onClick={handleManualSubmit} disabled={!manualId}>
-                                Save
-                            </NeoButton>
+                    <div className="flex flex-col gap-2 mt-2 border-t border-yellow-600/20 pt-2 w-full">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+                            <p className="text-xs md:text-sm">
+                                1. Find <strong>market_id</strong> in events on Explorer.<br/>
+                                2. Enter ID below.
+                            </p>
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <input 
+                                    type="number" 
+                                    placeholder="Market ID" 
+                                    className="border-2 border-yellow-600 p-1 px-2 rounded-none text-sm w-24"
+                                    value={manualId}
+                                    onChange={(e) => setManualId(e.target.value)}
+                                />
+                                <NeoButton size="sm" onClick={handleManualSubmit} disabled={!manualId}>
+                                    Save
+                                </NeoButton>
+                            </div>
+                            <a 
+                                href={`https://explorer.aptoslabs.com/txn/${bounty.creationTxnHash}?network=testnet`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs font-bold underline ml-2 hover:text-yellow-900"
+                            >
+                                View Transaction on Explorer
+                            </a>
                         </div>
-                        <a 
-                            href={`https://explorer.aptoslabs.com/txn/${bounty.creationTxnHash}?network=testnet`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-xs font-bold underline ml-2 hover:text-yellow-900"
-                        >
-                            View Transaction on Explorer
-                        </a>
+                        
+                        <div className="mt-2">
+                            <button 
+                                onClick={() => setDebugInfo(debugInfo ? "" : "Loading...")}
+                                className="text-xs underline text-yellow-800 font-bold"
+                            >
+                                {debugInfo ? "Hide Debug Info" : "Show Debug Info (If Sync Fails)"}
+                            </button>
+                            {debugInfo && (
+                                <textarea 
+                                    className="w-full h-48 text-xs font-mono p-2 border border-black mt-1 bg-white"
+                                    readOnly
+                                    value={debugInfo}
+                                />
+                            )}
+                        </div>
                     </div>
                 )}
               </div>
