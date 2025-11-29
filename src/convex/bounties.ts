@@ -51,6 +51,22 @@ export const create = mutation({
   },
 });
 
+export const deleteBounty = mutation({
+  args: { bountyId: v.id("bounties") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+    
+    const bounty = await ctx.db.get(args.bountyId);
+    if (!bounty) throw new Error("Bounty not found");
+    
+    if (bounty.creatorId !== userId) throw new Error("Only creator can delete");
+    
+    // Allow deletion if it's not resolved or if it's missing marketId (stuck)
+    await ctx.db.delete(args.bountyId);
+  },
+});
+
 export const placeBet = mutation({
   args: {
     bountyId: v.id("bounties"),

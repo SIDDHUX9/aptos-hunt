@@ -12,7 +12,7 @@ import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-reac
 import { analyzeContent } from "@/lib/veritas";
 import { Footer } from "@/components/Footer";
 import { getYoutubeThumbnail, isYoutubeUrl, getYoutubeId } from "@/lib/utils";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 import { MODULE_ADDRESS, MODULE_NAME, aptos } from "@/lib/aptos";
 import { Network } from "@aptos-labs/ts-sdk";
 
@@ -30,6 +30,7 @@ export default function BountyPage() {
   const placeBetMutation = useMutation(api.bounties.placeBet);
   const resolveBountyMutation = useMutation(api.bounties.resolve);
   const updateMarketId = useMutation(api.bounties.updateMarketId);
+  const deleteBountyMutation = useMutation(api.bounties.deleteBounty);
 
   const [betAmount, setBetAmount] = useState("1");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -38,6 +39,7 @@ export default function BountyPage() {
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualId, setManualId] = useState("");
   const [debugInfo, setDebugInfo] = useState<string>("");
+  const [txnStatus, setTxnStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (bounty === null) {
@@ -74,16 +76,21 @@ export default function BountyPage() {
     if (!bounty?.creationTxnHash) return;
     setIsSyncing(true);
     setDebugInfo("");
+    setTxnStatus(null);
     try {
       toast.info("Fetching transaction details from chain...");
       const txn = await aptos.getTransactionByHash({ transactionHash: bounty.creationTxnHash });
       
       setDebugInfo(JSON.stringify(txn, null, 2));
+      
+      // @ts-ignore
+      const status = txn.vm_status;
+      setTxnStatus(status);
 
       // @ts-ignore
-      if (txn.vm_status && txn.vm_status !== "Executed successfully") {
+      if (status && status !== "Executed successfully") {
          // @ts-ignore
-         toast.error(`Transaction Failed on Chain: ${txn.vm_status}`);
+         toast.error(`Transaction Failed on Chain: ${status}`);
          return;
       }
       
@@ -117,9 +124,19 @@ export default function BountyPage() {
       if (foundMarketId === undefined && (txn as any).changes) {
          for (const change of (txn as any).changes) {
             // Look for resource creation that might contain market_id
-            if (change.data && change.data.data && change.data.data.market_id) {
-                foundMarketId = Number(change.data.data.market_id);
-                break;
+            if (change.data && change.data.data) {
+                if (change.data.data.market_id) {
+                    foundMarketId = Number(change.data.data.market_id);
+                    break;
+                }
+                // Sometimes it might be just 'id' in the resource
+                if (change.data.data.id && !isNaN(Number(change.data.data.id))) {
+                    // Verify it's a market resource
+                    if (change.data.type && change.data.type.includes("Market")) {
+                        foundMarketId = Number(change.data.data.id);
+                        break;
+                    }
+                }
             }
          }
       }
@@ -139,6 +156,17 @@ export default function BountyPage() {
       setDebugInfo(JSON.stringify(error, null, 2));
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleDeleteBounty = async () => {
+    if (!confirm("Are you sure you want to delete this bounty? This cannot be undone.")) return;
+    try {
+        await deleteBountyMutation({ bountyId: bounty._id });
+        toast.success("Bounty deleted");
+        navigate("/dashboard");
+    } catch (e) {
+        toast.error("Failed to delete bounty");
     }
   };
 
@@ -308,7 +336,7 @@ export default function BountyPage() {
                     <div className="flex flex-col gap-2 mt-2 border-t border-yellow-600/20 pt-2 w-full">
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                             <p className="text-xs md:text-sm">
-                                1. Find <strong>market_id</strong> in events on Explorer.<br/>
+                                1. Find <strong>market_id</strong> in "Events" or "Changes" tab on Explorer.<br/>
                                 2. Enter ID below.
                             </p>
                             <div className="flex items-center gap-2 w-full md:w-auto">
@@ -333,21 +361,38 @@ export default function BountyPage() {
                             </a>
                         </div>
                         
-                        <div className="mt-2">
-                            <button 
-                                onClick={() => setDebugInfo(debugInfo ? "" : "Loading...")}
-                                className="text-xs underline text-yellow-800 font-bold"
-                            >
-                                {debugInfo ? "Hide Debug Info" : "Show Debug Info (If Sync Fails)"}
-                            </button>
-                            {debugInfo && (
-                                <textarea 
-                                    className="w-full h-48 text-xs font-mono p-2 border border-black mt-1 bg-white"
-                                    readOnly
-                                    value={debugInfo}
-                                />
-                            )}
+                        <div className="mt-4 p-2 bg-yellow-200/50 border border-yellow-600/30 rounded">
+                            <p className="text-xs font-bold mb-2">Troubleshooting:</p>
+                            <ul className="text-xs list-disc list-inside space-y-1">
+                                <li>If the transaction status is <strong>Failed</strong>, the market was not created. You should delete this bounty.</li>
+                                <li>If the transaction succeeded but you can't find the ID, check the <strong>Changes</strong> tab for a "Market" resource.</li>
+                            </ul>
+                            <div className="mt-2 flex justify-between items-center">
+                                <button 
+                                    onClick={() => setDebugInfo(debugInfo ? "" : "Loading...")}
+                                    className="text-xs underline text-yellow-800 font-bold"
+                                >
+                                    {debugInfo ? "Hide Debug Info" : "Show Debug Info"}
+                                </button>
+                                <NeoButton size="sm" variant="destructive" onClick={handleDeleteBounty} className="h-6 text-xs">
+                                    <Trash2 className="w-3 h-3 mr-1" /> Delete Bounty
+                                </NeoButton>
+                            </div>
                         </div>
+
+                        {txnStatus && (
+                            <div className={`mt-2 text-xs font-bold p-1 ${txnStatus === "Executed successfully" ? "text-green-700" : "text-red-700"}`}>
+                                Transaction Status: {txnStatus}
+                            </div>
+                        )}
+
+                        {debugInfo && (
+                            <textarea 
+                                className="w-full h-48 text-xs font-mono p-2 border border-black mt-1 bg-white"
+                                readOnly
+                                value={debugInfo}
+                            />
+                        )}
                     </div>
                 )}
               </div>
