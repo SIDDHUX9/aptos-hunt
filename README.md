@@ -12,10 +12,7 @@ This project uses the following tech stack:
 - Convex Auth (for authentication)
 - Framer Motion (for animations)
 - Three js (for 3d models)
-- //
-- //
-- //
-- //
+- Aptos Move (Smart Contracts)
 
 All relevant files live in the 'src' directory.
 
@@ -24,6 +21,14 @@ Use pnpm for the package manager.
 ## Setup
 
 This project is set up already and running on a cloud environment, as well as a convex development in the sandbox.
+
+## Smart Contract Setup (Web3)
+
+We have included a full Move smart contract for the prediction market logic.
+To deploy it to the Aptos Testnet, please follow the instructions in:
+`SMART_CONTRACT_SETUP.md`
+
+The contract source code is located in the `move/` directory.
 
 ## Environment Variables
 
