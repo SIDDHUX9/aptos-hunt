@@ -53,6 +53,15 @@ const schema = defineSchema(
       amount: v.number(),
       isReal: v.boolean(), // true = Real, false = AI
     }).index("by_bounty", ["bountyId"]).index("by_user", ["userId"]),
+
+    claims: defineTable({
+      userId: v.id("users"),
+      bountyId: v.id("bounties"),
+      amount: v.number(),
+      token: v.union(v.literal("APT"), v.literal("PAT")),
+      status: v.union(v.literal("pending"), v.literal("claimed")),
+      signature: v.optional(v.string()), // Mock signature for the smart contract
+    }).index("by_user_status", ["userId", "status"]),
   },
   {
     schemaValidation: false,

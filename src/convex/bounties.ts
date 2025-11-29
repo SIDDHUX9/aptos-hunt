@@ -95,6 +95,7 @@ export const resolve = mutation({
     // In a real app, this would be restricted to an admin or oracle
     const bounty = await ctx.db.get(args.bountyId);
     if (!bounty) throw new Error("Bounty not found");
+    if (bounty.isResolved) throw new Error("Bounty already resolved");
 
     await ctx.db.patch(args.bountyId, {
       isResolved: true,
@@ -102,7 +103,53 @@ export const resolve = mutation({
       status: args.isReal ? "verified_real" : "verified_ai",
     });
 
-    // Distribute rewards logic would go here
-    // For now, we just mark it resolved
+    // Calculate Rewards
+    const winningSide = args.isReal;
+    const totalPool = bounty.realPool + bounty.aiPool;
+    const winningPool = winningSide ? bounty.realPool : bounty.aiPool;
+
+    // 1. Fetch all bets for this bounty
+    const bets = await ctx.db
+      .query("bets")
+      .withIndex("by_bounty", (q) => q.eq("bountyId", args.bountyId))
+      .collect();
+
+    // 2. Distribute rewards to winners
+    for (const bet of bets) {
+      if (bet.isReal === winningSide) {
+        // Winner gets their bet back + share of the losing pool
+        // Share = (UserBet / WinningPool) * LosingPool
+        // Total Payout = UserBet + Share
+        // Simplified: (UserBet / WinningPool) * TotalPool
+        
+        let payout = 0;
+        if (winningPool > 0) {
+            payout = (bet.amount / winningPool) * totalPool;
+        } else {
+            payout = bet.amount; // Should not happen if pool > 0
+        }
+
+        // Create a Claim record for the user
+        // This represents the "off-chain list" entry that the user can claim
+        await ctx.db.insert("claims", {
+          userId: bet.userId,
+          bountyId: args.bountyId,
+          amount: payout,
+          token: "APT",
+          status: "pending",
+          signature: `mock_sig_${Date.now()}_${bet.userId}`, // Mock signature
+        });
+      }
+    }
+    
+    // 3. Reward the creator with PAT tokens (if not already rewarded enough)
+    await ctx.db.insert("claims", {
+        userId: bounty.creatorId,
+        bountyId: args.bountyId,
+        amount: 50, // Bonus PAT for successful resolution
+        token: "PAT",
+        status: "pending",
+        signature: `mock_sig_pat_${Date.now()}`,
+    });
   },
 });

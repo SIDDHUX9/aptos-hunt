@@ -9,6 +9,7 @@ import { Trophy, Plus, Clock, AlertTriangle, Activity, Wallet } from "lucide-rea
 import { useEffect, useState } from "react";
 import { getBlockHeight, getAptBalance } from "@/lib/aptos";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { RewardClaim } from "@/components/RewardClaim";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -98,6 +99,8 @@ export default function Dashboard() {
 
           {/* Center - Bounties List */}
           <div className="lg:col-span-6 space-y-6">
+            <RewardClaim />
+            
             <h1 className="text-4xl font-black uppercase mb-8">Active Bounties</h1>
             
             <div className="grid gap-6">
