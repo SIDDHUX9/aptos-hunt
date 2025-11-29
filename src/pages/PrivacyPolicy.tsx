@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
           <h1 className="text-4xl font-black uppercase mb-8">Privacy Policy</h1>
           
           <NeoCard className="prose max-w-none">
-            <p className="font-bold text-muted-foreground mb-6">Last Updated: October 24, 2024</p>
+            <p className="font-bold text-muted-foreground mb-6">Last Updated: November 29, 2025</p>
 
             <h2 className="text-2xl font-bold uppercase mt-6 mb-4">1. Introduction</h2>
             <p>

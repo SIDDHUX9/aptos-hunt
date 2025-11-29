@@ -62,7 +62,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono text-gray-500">
-          <p>© 2024 Deepfake Hunters. All rights reserved.</p>
+          <p>© 2025 Deepfake Hunters. All rights reserved.</p>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white">Terms of Service</Link>

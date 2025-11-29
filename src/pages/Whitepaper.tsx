@@ -17,7 +17,7 @@ export default function Whitepaper() {
           <div className="mb-8 text-center">
             <h1 className="text-4xl md:text-6xl font-black uppercase mb-4">Whitepaper</h1>
             <p className="text-xl text-muted-foreground font-mono">Deepfake Hunters Protocol v1.0</p>
-            <p className="text-sm text-muted-foreground font-mono mt-2">Published: October 2024</p>
+            <p className="text-sm text-muted-foreground font-mono mt-2">Published: November 2025</p>
           </div>
 
           <div className="space-y-8">
@@ -119,7 +119,7 @@ export default function Whitepaper() {
 
             {/* Disclaimer */}
             <div className="text-xs text-muted-foreground font-mono border-t-2 border-gray-200 pt-4 mt-8">
-              <p>© 2024 Deepfake Hunters. This whitepaper is for informational purposes only and does not constitute financial advice.</p>
+              <p>© 2025 Deepfake Hunters. This whitepaper is for informational purposes only and does not constitute financial advice.</p>
             </div>
           </div>
         </motion.div>
