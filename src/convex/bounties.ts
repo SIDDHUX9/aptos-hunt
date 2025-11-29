@@ -21,6 +21,7 @@ export const create = mutation({
   args: {
     contentUrl: v.string(),
     marketId: v.optional(v.number()),
+    creationTxnHash: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -35,6 +36,7 @@ export const create = mutation({
       aiPool: 0,
       isResolved: false,
       marketId: args.marketId,
+      creationTxnHash: args.creationTxnHash,
     });
 
     // Reward user with PAT (simulated)

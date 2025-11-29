@@ -47,6 +47,7 @@ const schema = defineSchema(
       isResolved: v.boolean(),
       isReal: v.optional(v.boolean()),
       marketId: v.optional(v.number()), // On-chain market ID
+      creationTxnHash: v.optional(v.string()), // Store hash if marketId lookup fails
       // New fields for Veritas AI analysis
       confidence: v.optional(v.number()),
       analysisLog: v.optional(v.array(v.string())),

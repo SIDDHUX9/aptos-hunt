@@ -52,50 +52,42 @@ export default function CreateBounty() {
       toast.loading("Waiting for transaction confirmation...", { duration: 5000 });
       
       let committedTxn;
+      let marketId: number | undefined = undefined;
+      let txnHash = response.hash;
+
       try {
         committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
+        
+        // @ts-ignore
+        if (!committedTxn.success) {
+          // @ts-ignore
+          throw new Error(`Transaction failed: ${committedTxn.vm_status}`);
+        }
+
+        // Attempt to extract marketId from events
+        // @ts-ignore
+        if (committedTxn.events) {
+          // @ts-ignore
+          for (const event of committedTxn.events) {
+            if ((event.type.includes("MarketCreatedEvent") || event.data?.market_id) && event.data?.market_id) {
+               marketId = Number(event.data.market_id);
+               break;
+            }
+          }
+        }
       } catch (error: any) {
         console.error("Transaction confirmation failed:", error);
-        // If it's a JSON parse error (Unauthorized), it means the node rejected our request
-        if (error.message && (error.message.includes("Unexpected token") || error.message.includes("JSON"))) {
-           throw new Error("Failed to confirm transaction with Aptos Node (401 Unauthorized). The transaction likely succeeded on-chain. Please check your wallet.");
-        }
-        throw new Error(`Failed to confirm transaction: ${error.message || "Unknown error"}`);
-      }
-      
-      // @ts-ignore
-      if (!committedTxn.success) {
-        // @ts-ignore
-        throw new Error(`Transaction failed: ${committedTxn.vm_status}`);
-      }
-
-      // Attempt to extract marketId from events
-      // We look for any event that has a `market_id` field
-      let marketId: number | undefined = undefined;
-      
-      // @ts-ignore
-      if (committedTxn.events) {
-        // @ts-ignore
-        for (const event of committedTxn.events) {
-          // Check for the specific event type if possible, or just look for the field
-          // The event type is usually: address::module::EventName
-          if (event.type.includes("MarketCreatedEvent") && event.data && event.data.market_id) {
-             marketId = Number(event.data.market_id);
-             break;
-          }
-          // Fallback for generic matching
-          if (event.data && event.data.market_id) {
-            marketId = Number(event.data.market_id);
-            break;
-          }
+        // If it's a JSON parse error (Unauthorized) or 401, we assume success but can't read events
+        if (error.message && (error.message.includes("Unexpected token") || error.message.includes("JSON") || error.message.includes("401"))) {
+           toast.warning("Could not verify transaction details (Node Unauthorized), but transaction likely succeeded. Saving bounty...");
+           // We proceed without marketId, but save the hash
+        } else {
+           throw new Error(`Failed to confirm transaction: ${error.message || "Unknown error"}`);
         }
       }
 
       if (marketId === undefined) {
-        console.warn("Could not find market_id in transaction events. Defaulting to undefined.");
-        // Fallback: If we can't find it, we might query the resource count, but for now let's proceed
-        // The user might have to manually link it or we rely on the backend to sync later.
-        // For this demo, we'll try to proceed.
+        console.warn("Could not find market_id in transaction events. Proceeding with hash only.");
       } else {
         console.log("Market Created with ID:", marketId);
       }
@@ -104,11 +96,12 @@ export default function CreateBounty() {
       try {
         const bountyId = await createBounty({ 
           contentUrl,
-          marketId: marketId 
+          marketId: marketId,
+          creationTxnHash: txnHash
         });
         
         toast.success("Bounty Created Successfully!", {
-          description: `Market ID: ${marketId || 'Pending'} | 10 PAT reward added.`
+          description: `Market ID: ${marketId || 'Pending Sync'} | 10 PAT reward added.`
         });
         
         navigate(`/bounty/${bountyId}`);
