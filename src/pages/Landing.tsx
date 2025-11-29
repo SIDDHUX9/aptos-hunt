@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
 import { ArrowRight, Shield, Zap, Trophy } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { useState, useEffect } from "react";
 
 const TypewriterText = ({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) => {
   return (
@@ -17,6 +18,61 @@ const TypewriterText = ({ text, className, delay = 0 }: { text: string; classNam
           {char}
         </motion.span>
       ))}
+    </span>
+  );
+};
+
+const TypewriterCycle = ({ 
+  words, 
+  className, 
+  delay = 0 
+}: { 
+  words: string[]; 
+  className?: string; 
+  delay?: number 
+}) => {
+  const [text, setText] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => {
+      setHasStarted(true);
+    }, delay * 1000);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    const currentWord = words[wordIndex % words.length];
+    const typeSpeed = isDeleting ? 50 : 100;
+    const pauseDuration = 2000;
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        if (text.length < currentWord.length) {
+          setText(currentWord.slice(0, text.length + 1));
+        } else {
+          setTimeout(() => setIsDeleting(true), pauseDuration);
+        }
+      } else {
+        if (text.length > 0) {
+          setText(currentWord.slice(0, text.length - 1));
+        } else {
+          setIsDeleting(false);
+          setWordIndex((prev) => prev + 1);
+        }
+      }
+    }, typeSpeed);
+
+    return () => clearTimeout(timer);
+  }, [text, isDeleting, wordIndex, hasStarted, words]);
+
+  return (
+    <span className={className}>
+      {text}
     </span>
   );
 };
@@ -41,12 +97,12 @@ export default function Landing() {
           <h1 className="text-6xl md:text-8xl font-black uppercase leading-none mb-6 min-h-[160px] md:min-h-[200px]">
             <div className="block">
               <TypewriterText text="Hunt " delay={0} />
-              <TypewriterText text="Deepfakes" className="text-primary" delay={0.5} />
+              <TypewriterCycle words={["Deepfakes", "AI Lies", "Synthetics", "Falsehoods"]} className="text-primary" delay={0.5} />
               <TypewriterText text="." delay={1.4} />
             </div>
             <div className="block">
               <TypewriterText text="Earn " delay={1.5} />
-              <TypewriterText text="Crypto" className="text-secondary" delay={2.0} />
+              <TypewriterCycle words={["Crypto", "Trust", "Rewards", "APT"]} className="text-secondary" delay={2.0} />
               <TypewriterText text="." delay={2.6} />
               <motion.span
                 initial={{ opacity: 0 }}
