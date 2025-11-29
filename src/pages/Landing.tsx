@@ -58,7 +58,7 @@ export default function Landing() {
         {/* Features */}
         <section className="py-20 bg-primary/5 border-y-4 border-black">
           <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
-            <NeoCard className="bg-white rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300">
+            <NeoCard className="bg-white rotate-1 hover:rotate-0 transition-transform">
               <Shield className="w-12 h-12 mb-4 text-primary" />
               <h3 className="text-2xl font-black uppercase mb-2">Verify Content</h3>
               <p className="font-bold text-muted-foreground">
@@ -66,7 +66,7 @@ export default function Landing() {
               </p>
             </NeoCard>
             
-            <NeoCard className="bg-white -rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300">
+            <NeoCard className="bg-white -rotate-1 hover:rotate-0 transition-transform">
               <Zap className="w-12 h-12 mb-4 text-secondary" />
               <h3 className="text-2xl font-black uppercase mb-2">Instant Rewards</h3>
               <p className="font-bold text-muted-foreground">
@@ -74,7 +74,7 @@ export default function Landing() {
               </p>
             </NeoCard>
             
-            <NeoCard className="bg-white rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300">
+            <NeoCard className="bg-white rotate-1 hover:rotate-0 transition-transform">
               <Trophy className="w-12 h-12 mb-4 text-accent" />
               <h3 className="text-2xl font-black uppercase mb-2">Climb Ranks</h3>
               <p className="font-bold text-muted-foreground">
@@ -94,7 +94,7 @@ export default function Landing() {
               { img: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?q=80&w=2600&auto=format&fit=crop", status: "PENDING" },
               { img: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2670&auto=format&fit=crop", status: "VERIFIED REAL" },
             ].map((item, i) => (
-              <NeoCard key={i} className="p-0 overflow-hidden group cursor-pointer hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-300">
+              <NeoCard key={i} className="p-0 overflow-hidden group cursor-pointer">
                 <div className="relative aspect-square overflow-hidden">
                   <img src={item.img} alt="Bounty" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   <div className="absolute top-4 left-4">

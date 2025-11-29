@@ -130,7 +130,7 @@ export default function Dashboard() {
                     <NeoCard className="group cursor-pointer hover:bg-accent/5 transition-colors">
                       <div className="flex flex-col md:flex-row gap-4">
                         <div className="w-full md:w-48 h-48 md:h-32 bg-gray-200 border-2 border-black overflow-hidden relative">
-                          <img src={bounty.contentUrl} alt="Bounty Content" className="w-full h-full object-cover" />
+                          <img src={bounty.contentUrl} alt="Bounty Content" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                           <div className="absolute top-2 left-2">
                             <NeoBadge variant={bounty.status === 'pending' ? 'warning' : bounty.status === 'verified_real' ? 'success' : 'danger'}>
                               {bounty.status === 'pending' ? 'PENDING' : bounty.status === 'verified_real' ? 'REAL' : 'FAKE'}
