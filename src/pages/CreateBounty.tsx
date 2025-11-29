@@ -51,7 +51,17 @@ export default function CreateBounty() {
       const response = await signAndSubmitTransaction(transaction);
       toast.loading("Waiting for transaction confirmation...", { duration: 5000 });
       
-      const committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
+      let committedTxn;
+      try {
+        committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
+      } catch (error: any) {
+        console.error("Transaction confirmation failed:", error);
+        // If it's a JSON parse error (Unauthorized), it means the node rejected our request
+        if (error.message && (error.message.includes("Unexpected token") || error.message.includes("JSON"))) {
+           throw new Error("Failed to confirm transaction with Aptos Node (401 Unauthorized). The transaction likely succeeded on-chain. Please check your wallet.");
+        }
+        throw new Error(`Failed to confirm transaction: ${error.message || "Unknown error"}`);
+      }
       
       // @ts-ignore
       if (!committedTxn.success) {
@@ -91,16 +101,21 @@ export default function CreateBounty() {
       }
 
       // 2. Create Bounty in Convex
-      const bountyId = await createBounty({ 
-        contentUrl,
-        marketId: marketId 
-      });
-      
-      toast.success("Bounty Created Successfully!", {
-        description: `Market ID: ${marketId || 'Pending'} | 10 PAT reward added.`
-      });
-      
-      navigate(`/bounty/${bountyId}`);
+      try {
+        const bountyId = await createBounty({ 
+          contentUrl,
+          marketId: marketId 
+        });
+        
+        toast.success("Bounty Created Successfully!", {
+          description: `Market ID: ${marketId || 'Pending'} | 10 PAT reward added.`
+        });
+        
+        navigate(`/bounty/${bountyId}`);
+      } catch (convexError: any) {
+        console.error("Convex creation failed:", convexError);
+        throw new Error(`Failed to save bounty to database: ${convexError.message}`);
+      }
     } catch (error: any) {
       console.error(error);
       toast.error("Failed to create bounty: " + (error.message || "Unknown error"));

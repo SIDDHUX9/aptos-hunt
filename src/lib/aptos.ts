@@ -12,10 +12,15 @@ export const MODULE_ADDRESS = "0x155e43ac5e3c045997eae5fc8ccbcf9ddcc8dbd77849e4e
 export const MODULE_NAME = "market";
 
 // Force Testnet configuration
+// Only use API_KEY if it is set and not a placeholder like "demo_key"
+const validApiKey = API_KEY && API_KEY !== "demo_key" && !API_KEY.includes("placeholder") ? API_KEY : undefined;
+
+console.log("Aptos Client Initialized with Node URL:", NODE_URL);
+
 const config = new AptosConfig({
   network: Network.TESTNET,
   fullnode: NODE_URL,
-  clientConfig: API_KEY ? { API_KEY } : undefined,
+  clientConfig: validApiKey ? { API_KEY: validApiKey } : undefined,
 });
 
 export const aptos = new Aptos(config);
