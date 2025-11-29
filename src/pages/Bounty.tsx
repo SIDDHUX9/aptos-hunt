@@ -54,6 +54,10 @@ export default function BountyPage() {
           typeArguments: ["0x1::aptos_coin::AptosCoin"],
           functionArguments: [TREASURY_ADDRESS, amountOctas.toString()],
         },
+        options: {
+          maxGasAmount: 10000,
+          gasUnitPrice: 100,
+        },
       };
 
       const response = await signAndSubmitTransaction(transaction);

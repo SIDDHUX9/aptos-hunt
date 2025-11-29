@@ -39,6 +39,10 @@ export function RewardClaim() {
           typeArguments: ["0x1::aptos_coin::AptosCoin"],
           functionArguments: [account.address, "0"], // 0 transfer to self, passed as string
         },
+        options: {
+          maxGasAmount: 5000,
+          gasUnitPrice: 100,
+        },
       };
 
       const response = await signAndSubmitTransaction(transaction);
