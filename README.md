@@ -12,6 +12,7 @@ This project uses the following tech stack:
 - Convex Auth (for authentication)
 - Framer Motion (for animations)
 - Three js (for 3d models)
+- //
 
 All relevant files live in the 'src' directory.
 
