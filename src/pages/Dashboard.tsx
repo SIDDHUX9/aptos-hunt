@@ -3,7 +3,7 @@ import { NeoButton, NeoCard, NeoBadge } from "@/components/NeoComponents";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Trophy, Plus, Clock, AlertTriangle, Activity, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const bounties = useQuery(api.bounties.list);
   const [blockHeight, setBlockHeight] = useState<string>("Loading...");
   const { account, connected } = useWallet();
@@ -78,12 +79,10 @@ export default function Dashboard() {
                    </div>
                    <p className="font-mono font-bold">{blockHeight}</p>
                 </div>
-                <Link to="/create-bounty">
-                  <NeoButton className="w-full mt-4">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Bounty
-                  </NeoButton>
-                </Link>
+                <NeoButton className="w-full mt-4" onClick={() => navigate("/create-bounty")}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Bounty
+                </NeoButton>
               </div>
             </NeoCard>
             
@@ -115,7 +114,7 @@ export default function Dashboard() {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link to={`/bounty/${bounty._id}`}>
+                  <div onClick={() => navigate(`/bounty/${bounty._id}`)}>
                     <NeoCard className="group cursor-pointer hover:bg-accent/5 transition-colors">
                       <div className="flex flex-col md:flex-row gap-4">
                         <div className="w-full md:w-48 h-32 bg-gray-200 border-2 border-black overflow-hidden relative">
@@ -152,7 +151,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </NeoCard>
-                  </Link>
+                  </div>
                 </motion.div>
               )))}
             </div>

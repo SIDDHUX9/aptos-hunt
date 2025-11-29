@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
 import { ArrowRight, Shield, Zap, Trophy } from "lucide-react";
 
 export default function Landing() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
       {/* Hero Section */}
@@ -12,9 +14,7 @@ export default function Landing() {
           <div className="text-2xl font-black uppercase tracking-tighter">
             Deepfake<span className="text-primary">Hunters</span>
           </div>
-          <Link to="/auth">
-            <NeoButton>Login to Hunt</NeoButton>
-          </Link>
+          <NeoButton onClick={() => navigate("/auth")}>Login to Hunt</NeoButton>
         </div>
       </header>
 
@@ -45,16 +45,12 @@ export default function Landing() {
             transition={{ delay: 0.2 }}
             className="flex flex-col md:flex-row gap-4 justify-center"
           >
-            <Link to="/auth">
-              <NeoButton size="lg" className="text-xl px-8 py-6 w-full md:w-auto">
-                Start Hunting <ArrowRight className="ml-2" />
-              </NeoButton>
-            </Link>
-            <Link to="/dashboard">
-              <NeoButton variant="outline" size="lg" className="text-xl px-8 py-6 w-full md:w-auto">
-                View Bounties
-              </NeoButton>
-            </Link>
+            <NeoButton size="lg" className="text-xl px-8 py-6 w-full md:w-auto" onClick={() => navigate("/auth")}>
+              Start Hunting <ArrowRight className="ml-2" />
+            </NeoButton>
+            <NeoButton variant="outline" size="lg" className="text-xl px-8 py-6 w-full md:w-auto" onClick={() => navigate("/dashboard")}>
+              View Bounties
+            </NeoButton>
           </motion.div>
         </section>
 

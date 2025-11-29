@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { NeoButton } from "./NeoComponents";
 import { useAuth } from "@/hooks/use-auth";
 import { User } from "lucide-react";
@@ -6,6 +6,7 @@ import { WalletConnect } from "./WalletConnect";
 
 export function Navbar() {
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="border-b-4 border-black bg-white p-4 sticky top-0 z-50">
@@ -15,23 +16,19 @@ export function Navbar() {
         </Link>
         
         <div className="flex gap-4 items-center">
-          <Link to="/dashboard">
-            <NeoButton variant="ghost" className="hidden md:flex">Dashboard</NeoButton>
-          </Link>
+          <NeoButton variant="ghost" className="hidden md:flex" onClick={() => navigate("/dashboard")}>
+            Dashboard
+          </NeoButton>
           
           <WalletConnect />
 
           {isAuthenticated ? (
-            <Link to={`/profile/${user?._id}`}>
-              <NeoButton variant="outline" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Profile</span>
-              </NeoButton>
-            </Link>
+            <NeoButton variant="outline" className="flex items-center gap-2" onClick={() => navigate(`/profile/${user?._id}`)}>
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </NeoButton>
           ) : (
-            <Link to="/auth">
-              <NeoButton>Login</NeoButton>
-            </Link>
+            <NeoButton onClick={() => navigate("/auth")}>Login</NeoButton>
           )}
         </div>
       </div>
