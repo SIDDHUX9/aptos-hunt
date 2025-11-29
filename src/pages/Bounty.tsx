@@ -3,7 +3,7 @@ import { NeoButton, NeoCard, NeoBadge } from "@/components/NeoComponents";
 import { useParams, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2, ShieldCheck, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Database } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -60,9 +60,9 @@ export default function BountyPage() {
         });
         
         if (isReal) {
-          toast.success("Shelby Verdict: REAL", { description: "Winners have been paid out!" });
+          toast.success("Veritas Verdict: REAL", { description: "Winners have been paid out!" });
         } else {
-          toast.error("Shelby Verdict: AI GENERATED", { description: "Winners have been paid out!" });
+          toast.error("Veritas Verdict: AI GENERATED", { description: "Winners have been paid out!" });
         }
       } catch (error) {
         toast.error("Failed to resolve bounty");
@@ -84,12 +84,18 @@ export default function BountyPage() {
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h1 className="text-4xl font-black uppercase">Bounty #{bounty._id.slice(-4)}</h1>
-            <NeoBadge 
-              variant={bounty.status === 'pending' ? 'warning' : bounty.status === 'verified_real' ? 'success' : 'danger'}
-              className="text-lg px-4 py-1"
-            >
-              {bounty.status === 'pending' ? 'VERIFICATION PENDING' : bounty.status === 'verified_real' ? 'VERIFIED REAL' : 'VERIFIED AI'}
-            </NeoBadge>
+            <div className="flex gap-2">
+              <NeoBadge variant="default" className="bg-blue-600 text-white border-blue-900">
+                <Database className="w-3 h-3 mr-1" />
+                SHELBY STORAGE
+              </NeoBadge>
+              <NeoBadge 
+                variant={bounty.status === 'pending' ? 'warning' : bounty.status === 'verified_real' ? 'success' : 'danger'}
+                className="text-lg px-4 py-1"
+              >
+                {bounty.status === 'pending' ? 'VERIFICATION PENDING' : bounty.status === 'verified_real' ? 'VERIFIED REAL' : 'VERIFIED AI'}
+              </NeoBadge>
+            </div>
           </div>
         </div>
 
@@ -109,7 +115,7 @@ export default function BountyPage() {
                     className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10"
                   >
                     <Loader2 className="w-16 h-16 text-primary animate-spin mb-4" />
-                    <h3 className="text-2xl font-bold text-white uppercase tracking-widest">Shelby AI Scanning...</h3>
+                    <h3 className="text-2xl font-bold text-white uppercase tracking-widest">Veritas AI Scanning...</h3>
                     <p className="text-gray-400 font-mono mt-2">Analyzing pixel patterns & metadata</p>
                   </motion.div>
                 )}
@@ -192,14 +198,14 @@ export default function BountyPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="font-mono text-sm">Shelby Oracle Online</span>
+                <span className="font-mono text-sm">Veritas Oracle Online</span>
               </div>
               <NeoButton 
                 onClick={handleSimulateVerification}
                 disabled={isVerifying || bounty.isResolved}
                 variant="outline"
               >
-                {isVerifying ? 'Verifying...' : 'Trigger Shelby Verification'}
+                {isVerifying ? 'Verifying...' : 'Trigger Veritas Verification'}
               </NeoButton>
             </div>
           </NeoCard>

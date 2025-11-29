@@ -36,7 +36,7 @@ export default function Landing() {
             className="text-xl md:text-2xl font-bold max-w-2xl mx-auto mb-12 text-muted-foreground"
           >
             The first prediction market for viral content authenticity. 
-            Bet on Real vs AI. Verified by Shelby Oracle.
+            Bet on Real vs AI. Verified by Veritas AI. Content secured on Shelby Protocol.
           </motion.p>
 
           <motion.div 
@@ -61,7 +61,7 @@ export default function Landing() {
               <Shield className="w-12 h-12 mb-4 text-primary" />
               <h3 className="text-2xl font-black uppercase mb-2">Verify Content</h3>
               <p className="font-bold text-muted-foreground">
-                Use our Shelby Oracle to cryptographically prove if content is real or AI-generated.
+                Use our Veritas Oracle to cryptographically prove if content is real or AI-generated.
               </p>
             </NeoCard>
             

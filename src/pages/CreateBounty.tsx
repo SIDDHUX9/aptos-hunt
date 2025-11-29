@@ -3,7 +3,7 @@ import { NeoButton, NeoCard } from "@/components/NeoComponents";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Upload, Link as LinkIcon } from "lucide-react";
+import { Upload, Link as LinkIcon, Database } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -20,10 +20,15 @@ export default function CreateBounty() {
     setIsSubmitting(true);
     
     try {
+      // Simulate Shelby Upload
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.info("Uploading to Shelby Protocol...", { duration: 1000 });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const bountyId = await createBounty({ contentUrl: url });
       
       toast.success("Bounty Created!", {
-        description: "10 PAT reward added to your balance."
+        description: "Content secured on Shelby. 10 PAT reward added."
       });
       
       navigate(`/bounty/${bountyId}`);
@@ -60,18 +65,21 @@ export default function CreateBounty() {
                 />
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Paste a link to the image or video you want to verify.
+                Paste a link to the image or video. We will archive it on Shelby.
               </p>
             </div>
 
             <div className="border-2 border-dashed border-black p-8 text-center bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="font-bold">Or upload file directly</p>
-              <p className="text-xs text-muted-foreground">(Demo: URL input only for now)</p>
+              <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
+                <Database className="w-3 h-3" />
+                <span>Powered by Shelby Storage</span>
+              </div>
             </div>
 
             <NeoButton type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Bounty & Earn 10 PAT"}
+              {isSubmitting ? "Uploading to Shelby..." : "Create Bounty & Earn 10 PAT"}
             </NeoButton>
           </form>
         </NeoCard>
