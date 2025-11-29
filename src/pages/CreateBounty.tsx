@@ -14,7 +14,7 @@ import { getYoutubeThumbnail, isYoutubeUrl } from "@/lib/utils";
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { MODULE_ADDRESS, MODULE_NAME, aptos, checkContract } from "@/lib/aptos";
 import { Network } from "@aptos-labs/ts-sdk";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Terminal } from "lucide-react";
 
 export default function CreateBounty() {
   const navigate = useNavigate();
@@ -216,14 +216,24 @@ export default function CreateBounty() {
           
           {contractExists === false && (
             <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-6 flex items-start gap-3">
-                <AlertTriangle className="w-6 h-6 shrink-0" />
-                <div>
+                <AlertTriangle className="w-6 h-6 shrink-0 mt-1" />
+                <div className="w-full">
                     <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
                     <p className="text-sm mb-2">
                         The contract at <code>{MODULE_ADDRESS}</code> could not be found on Aptos Testnet.
                     </p>
-                    <p className="text-sm font-bold">
-                        Did you redeploy? Please update <code>src/lib/aptos.ts</code> with your new address.
+                    <p className="text-sm font-bold mb-2">
+                        Action Required: Redeploy the contract and update the address.
+                    </p>
+                    <div className="bg-black/10 p-3 rounded text-xs font-mono mb-2 flex flex-col gap-1">
+                        <span className="font-bold text-black/50 uppercase text-[10px]">Run in Terminal:</span>
+                        <div className="flex items-center gap-2">
+                            <Terminal className="w-3 h-3" />
+                            <span>aptos move publish --named-addresses deepfake_hunters=default</span>
+                        </div>
+                    </div>
+                    <p className="text-xs">
+                        Then copy the <strong>package address</strong> from the output and paste it into <code>src/lib/aptos.ts</code>.
                     </p>
                 </div>
             </div>

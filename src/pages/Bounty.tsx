@@ -12,8 +12,8 @@ import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-reac
 import { analyzeContent } from "@/lib/veritas";
 import { Footer } from "@/components/Footer";
 import { getYoutubeThumbnail, isYoutubeUrl, getYoutubeId } from "@/lib/utils";
-import { ExternalLink, RefreshCw, Trash2 } from "lucide-react";
-import { MODULE_ADDRESS, MODULE_NAME, aptos } from "@/lib/aptos";
+import { ExternalLink, RefreshCw, Trash2, Terminal } from "lucide-react";
+import { MODULE_ADDRESS, MODULE_NAME, aptos, checkContract } from "@/lib/aptos";
 import { Network } from "@aptos-labs/ts-sdk";
 
 // Treasury address to collect bets (Demo address)
@@ -40,6 +40,12 @@ export default function BountyPage() {
   const [manualId, setManualId] = useState("");
   const [debugInfo, setDebugInfo] = useState<string>("");
   const [txnStatus, setTxnStatus] = useState<string | null>(null);
+  const [contractExists, setContractExists] = useState<boolean | null>(null);
+
+  // Check if contract exists on load
+  useEffect(() => {
+    checkContract().then(exists => setContractExists(exists));
+  }, []);
 
   useEffect(() => {
     if (bounty === null) {
@@ -302,6 +308,24 @@ export default function BountyPage() {
               ← Back to Dashboard
             </NeoButton>
             
+            {contractExists === false && (
+              <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-4 flex items-start gap-3">
+                  <ShieldAlert className="w-6 h-6 shrink-0 mt-1" />
+                  <div className="w-full">
+                      <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
+                      <p className="text-sm mb-2">
+                          Betting is disabled because the contract at <code>{MODULE_ADDRESS}</code> is missing.
+                      </p>
+                      <div className="bg-black/10 p-2 rounded text-xs font-mono mb-1">
+                          aptos move publish --named-addresses deepfake_hunters=default
+                      </div>
+                      <p className="text-xs">
+                          Update <code>src/lib/aptos.ts</code> with the new address after deploying.
+                      </p>
+                  </div>
+              </div>
+            )}
+
             {isWrongNetwork && (
               <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2 font-bold">

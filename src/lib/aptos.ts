@@ -7,6 +7,7 @@ const OFFICIAL_TESTNET_URL = "https://api.testnet.aptoslabs.com/v1";
 const NODE_URL = import.meta.env.VITE_APTOS_NODE_URL || OFFICIAL_TESTNET_URL;
 const API_KEY = import.meta.env.VITE_APTOS_API_KEY;
 
+// TODO: Update this address after running 'aptos move publish'
 export const MODULE_ADDRESS = "0x155e43ac5e3c045997eae5fc8ccbcf9ddcc8dbd77849e4e54a40aa7d9dfd9ba9";
 export const MODULE_NAME = "market";
 
