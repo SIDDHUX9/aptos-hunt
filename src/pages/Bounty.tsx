@@ -12,8 +12,8 @@ import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-reac
 import { analyzeContent } from "@/lib/veritas";
 import { Footer } from "@/components/Footer";
 import { getYoutubeThumbnail, isYoutubeUrl, getYoutubeId } from "@/lib/utils";
-import { ExternalLink } from "lucide-react";
-import { MODULE_ADDRESS, MODULE_NAME } from "@/lib/aptos";
+import { ExternalLink, RefreshCw } from "lucide-react";
+import { MODULE_ADDRESS, MODULE_NAME, aptos } from "@/lib/aptos";
 import { Network } from "@aptos-labs/ts-sdk";
 
 // Treasury address to collect bets (Demo address)
@@ -29,9 +29,11 @@ export default function BountyPage() {
   const bounty = useQuery(api.bounties.get, { id: id as Id<"bounties"> });
   const placeBetMutation = useMutation(api.bounties.placeBet);
   const resolveBountyMutation = useMutation(api.bounties.resolve);
+  const updateMarketId = useMutation(api.bounties.updateMarketId);
 
   const [betAmount, setBetAmount] = useState("1");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [veritasLogs, setVeritasLogs] = useState<string[]>([]);
 
   useEffect(() => {
@@ -65,6 +67,44 @@ export default function BountyPage() {
     }
   };
 
+  const handleSyncMarket = async () => {
+    if (!bounty?.creationTxnHash) return;
+    setIsSyncing(true);
+    try {
+      toast.info("Fetching transaction details from chain...");
+      const txn = await aptos.getTransactionByHash({ transactionHash: bounty.creationTxnHash });
+      
+      let foundMarketId: number | undefined;
+      
+      // @ts-ignore
+      if (txn.events) {
+        // @ts-ignore
+        for (const event of txn.events) {
+           if ((event.type && event.type.includes("MarketCreatedEvent")) || (event.data && event.data.market_id)) {
+              if (event.data && event.data.market_id) {
+                foundMarketId = Number(event.data.market_id);
+                break;
+              }
+           }
+        }
+      }
+
+      if (foundMarketId !== undefined) {
+        await updateMarketId({ bountyId: bounty._id, marketId: foundMarketId });
+        toast.success("Market ID Synced Successfully!", { description: `Market ID: ${foundMarketId}` });
+      } else {
+        toast.error("Could not find Market ID in transaction logs.");
+        console.log("Transaction Data:", txn);
+      }
+
+    } catch (error: any) {
+      console.error("Sync failed:", error);
+      toast.error("Failed to sync market: " + (error.message || "Unknown error"));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleBet = async (side: boolean) => {
     if (!account) {
       toast.error("Please connect your wallet first");
@@ -85,7 +125,7 @@ export default function BountyPage() {
     // Check if marketId exists
     if (!bounty.marketId) {
       toast.error("Market Not Found On-Chain", {
-        description: "This bounty was created before the smart contract integration or failed to sync. Please create a new bounty."
+        description: "This bounty is missing its Market ID. Please try syncing it first."
       });
       return;
     }
@@ -194,6 +234,19 @@ export default function BountyPage() {
                 </div>
                 <NeoButton size="sm" variant="destructive" onClick={handleSwitchNetwork}>
                   Switch Network
+                </NeoButton>
+              </div>
+            )}
+
+            {!bounty.marketId && bounty.creationTxnHash && (
+              <div className="bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2 font-bold">
+                  <ShieldAlert className="w-5 h-5" />
+                  <span>MARKET NOT SYNCED: This bounty is missing its On-Chain Market ID.</span>
+                </div>
+                <NeoButton size="sm" className="bg-yellow-500 text-black hover:bg-yellow-600" onClick={handleSyncMarket} disabled={isSyncing}>
+                  {isSyncing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                  {isSyncing ? "Syncing..." : "Sync Market ID"}
                 </NeoButton>
               </div>
             )}

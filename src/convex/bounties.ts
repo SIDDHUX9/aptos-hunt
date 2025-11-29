@@ -89,6 +89,18 @@ export const placeBet = mutation({
   },
 });
 
+export const updateMarketId = mutation({
+  args: {
+    bountyId: v.id("bounties"),
+    marketId: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.bountyId, {
+      marketId: args.marketId,
+    });
+  },
+});
+
 export const resolve = mutation({
   args: {
     bountyId: v.id("bounties"),
