@@ -9,6 +9,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+import { analyzeContent } from "@/lib/veritas";
 
 // Treasury address to collect bets (Demo address)
 const TREASURY_ADDRESS = "0x98a5e0efcf102175e75dd459068ade9e845dd61291e6197d1cf01e3d6c590e93";
@@ -25,6 +26,7 @@ export default function BountyPage() {
 
   const [betAmount, setBetAmount] = useState("1");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [veritasLogs, setVeritasLogs] = useState<string[]>([]);
 
   useEffect(() => {
     if (bounty === null) {
@@ -75,30 +77,44 @@ export default function BountyPage() {
     }
   };
 
-  const handleSimulateVerification = () => {
+  const handleSimulateVerification = async () => {
     setIsVerifying(true);
+    setVeritasLogs(["Initializing Veritas AI..."]);
     
-    // Simulate 2 second delay
-    setTimeout(async () => {
-      const isReal = Math.random() > 0.5;
+    try {
+      // 1. Run Veritas AI Analysis
+      const analysis = await analyzeContent(bounty.contentUrl);
       
-      try {
-        await resolveBountyMutation({
-          bountyId: bounty._id,
-          isReal
-        });
-        
-        if (isReal) {
-          toast.success("Veritas Verdict: REAL", { description: "Winners have been paid out!" });
-        } else {
-          toast.error("Veritas Verdict: AI GENERATED", { description: "Winners have been paid out!" });
-        }
-      } catch (error) {
-        toast.error("Failed to resolve bounty");
-      } finally {
-        setIsVerifying(false);
+      // Simulate streaming logs
+      for (const log of analysis.logs) {
+        setVeritasLogs(prev => [...prev, log]);
+        await new Promise(r => setTimeout(r, 800)); // Delay for effect
       }
-    }, 2000);
+
+      // 2. Submit Result to Chain/Database
+      await resolveBountyMutation({
+        bountyId: bounty._id,
+        isReal: analysis.isReal,
+        confidence: analysis.confidence,
+        analysisLog: analysis.logs
+      });
+      
+      if (analysis.isReal) {
+        toast.success(`Veritas Verdict: REAL (${analysis.confidence}% Confidence)`, { 
+          description: "Winners have been paid out!" 
+        });
+      } else {
+        toast.error(`Veritas Verdict: AI GENERATED (${analysis.confidence}% Confidence)`, { 
+          description: "Winners have been paid out!" 
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to resolve bounty");
+    } finally {
+      setIsVerifying(false);
+      setVeritasLogs([]);
+    }
   };
 
   return (
@@ -141,11 +157,22 @@ export default function BountyPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10"
+                    className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-10 p-8"
                   >
                     <Loader2 className="w-16 h-16 text-primary animate-spin mb-4" />
-                    <h3 className="text-2xl font-bold text-white uppercase tracking-widest">Veritas AI Scanning...</h3>
-                    <p className="text-gray-400 font-mono mt-2">Analyzing pixel patterns & metadata</p>
+                    <h3 className="text-2xl font-bold text-white uppercase tracking-widest mb-4">Veritas AI Scanning...</h3>
+                    <div className="w-full max-w-md space-y-2 font-mono text-sm text-green-400">
+                      {veritasLogs.map((log, i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="truncate"
+                        >
+                          {">"} {log}
+                        </motion.div>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
                 
@@ -155,16 +182,36 @@ export default function BountyPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 pointer-events-none"
                   >
-                    <div className={`border-8 ${bounty.isReal ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'} p-8 transform -rotate-12 bg-black`}>
+                    <div className={`border-8 ${bounty.isReal ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'} p-8 transform -rotate-12 bg-black mb-4`}>
                       <h2 className="text-6xl font-black uppercase tracking-tighter">
                         {bounty.isReal ? 'REAL' : 'FAKE'}
                       </h2>
                     </div>
+                    {bounty.confidence && (
+                      <div className="bg-black border-2 border-white text-white px-4 py-2 font-mono font-bold">
+                        CONFIDENCE: {bounty.confidence}%
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           </NeoCard>
+
+          {/* Analysis Logs (Post-Resolution) */}
+          {bounty.isResolved && bounty.analysisLog && (
+            <NeoCard className="bg-black text-green-400 font-mono text-sm p-4 border-green-900">
+              <h3 className="text-white font-bold uppercase mb-2 border-b border-gray-800 pb-2">Veritas Analysis Log</h3>
+              <div className="space-y-1">
+                {bounty.analysisLog.map((log: string, i: number) => (
+                  <div key={i}>{">"} {log}</div>
+                ))}
+                <div className="text-white mt-2 pt-2 border-t border-gray-800 font-bold">
+                  {">"} FINAL VERDICT: {bounty.isReal ? "AUTHENTIC CONTENT" : "AI GENERATED CONTENT"}
+                </div>
+              </div>
+            </NeoCard>
+          )}
 
           {/* Betting Interface */}
           <div className="grid md:grid-cols-2 gap-8">

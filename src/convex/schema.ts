@@ -46,6 +46,9 @@ const schema = defineSchema(
       aiPool: v.number(),
       isResolved: v.boolean(),
       isReal: v.optional(v.boolean()),
+      // New fields for Veritas AI analysis
+      confidence: v.optional(v.number()),
+      analysisLog: v.optional(v.array(v.string())),
     }).index("by_status", ["status"]),
 
     bets: defineTable({

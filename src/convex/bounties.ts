@@ -89,6 +89,8 @@ export const resolve = mutation({
   args: {
     bountyId: v.id("bounties"),
     isReal: v.boolean(),
+    confidence: v.optional(v.number()),
+    analysisLog: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     // In a real app, this would be restricted to an admin or oracle
@@ -100,6 +102,8 @@ export const resolve = mutation({
       isResolved: true,
       isReal: args.isReal,
       status: args.isReal ? "verified_real" : "verified_ai",
+      confidence: args.confidence,
+      analysisLog: args.analysisLog,
     });
 
     // Calculate Rewards
