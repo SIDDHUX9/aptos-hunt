@@ -8,10 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+
+// Treasury address to collect bets (Demo address)
+const TREASURY_ADDRESS = "0x98a5e0efcf102175e75dd459068ade9e845dd61291e6197d1cf01e3d6c590e93";
 
 export default function BountyPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { signAndSubmitTransaction, account } = useWallet();
   
   // Convex hooks
   const bounty = useQuery(api.bounties.get, { id: id as Id<"bounties"> });
@@ -30,15 +35,39 @@ export default function BountyPage() {
   if (!bounty) return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
 
   const handleBet = async (side: boolean) => {
+    if (!account) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     try {
+      toast.info("Please sign the transaction in your wallet...");
+      
+      // 1. Trigger Real Aptos Transaction
+      const amountOctas = Math.floor(Number(betAmount) * 100_000_000); // Convert APT to Octas
+      
+      const transaction: InputTransactionData = {
+        data: {
+          function: "0x1::coin::transfer",
+          typeArguments: ["0x1::aptos_coin::AptosCoin"],
+          functionArguments: [TREASURY_ADDRESS, amountOctas.toString()],
+        },
+      };
+
+      const response = await signAndSubmitTransaction(transaction);
+      
+      toast.loading("Transaction submitted. Confirming...", { duration: 2000 });
+
+      // 2. Record Bet in Convex with Hash
       await placeBetMutation({
         bountyId: bounty._id,
         amount: Number(betAmount),
-        isReal: side
+        isReal: side,
+        txnHash: response.hash
       });
       
       toast.success(`Bet placed on ${side ? "REAL" : "AI"}`, {
-        description: `${betAmount} APT deducted from wallet`
+        description: `Transaction Hash: ${response.hash.slice(0, 8)}...`
       });
     } catch (error) {
       toast.error("Failed to place bet");

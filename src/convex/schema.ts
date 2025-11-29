@@ -53,6 +53,7 @@ const schema = defineSchema(
       userId: v.id("users"),
       amount: v.number(),
       isReal: v.boolean(), // true = Real, false = AI
+      txnHash: v.optional(v.string()), // Transaction hash for verification
     }).index("by_bounty", ["bountyId"]).index("by_user", ["userId"]),
 
     claims: defineTable({

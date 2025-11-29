@@ -52,6 +52,7 @@ export const placeBet = mutation({
     bountyId: v.id("bounties"),
     amount: v.number(),
     isReal: v.boolean(),
+    txnHash: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -67,6 +68,7 @@ export const placeBet = mutation({
       userId,
       amount: args.amount,
       isReal: args.isReal,
+      txnHash: args.txnHash,
     });
 
     // Update pool
@@ -76,13 +78,10 @@ export const placeBet = mutation({
       await ctx.db.patch(args.bountyId, { aiPool: bounty.aiPool + args.amount });
     }
     
-    // Deduct from user (simulated APT balance)
-    const user = await ctx.db.get(userId);
-    if (user) {
-        // Initialize if not exists
-        const currentApt = user.aptBalance ?? 1000; 
-        await ctx.db.patch(userId, { aptBalance: currentApt - args.amount });
-    }
+    // Note: We no longer deduct from simulated aptBalance since this is now a real on-chain transaction
+    // But we can still track it if we want, or just rely on the real chain state.
+    // For this hybrid app, we'll keep the simulated balance sync for display purposes if needed, 
+    // but the source of truth for the bet payment is now the blockchain.
   },
 });
 
