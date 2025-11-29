@@ -79,7 +79,9 @@ export default function CreateBounty() {
         console.error("Transaction confirmation failed:", error);
         // If it's a JSON parse error (Unauthorized) or 401, we assume success but can't read events
         if (error.message && (error.message.includes("Unexpected token") || error.message.includes("JSON") || error.message.includes("401"))) {
-           toast.warning("Could not verify transaction details (Node Unauthorized), but transaction likely succeeded. Saving bounty...");
+           toast.warning("Could not verify transaction details (Node Unauthorized). Saving bounty...", {
+             description: "You may need to manually sync the Market ID from the dashboard."
+           });
            // We proceed without marketId, but save the hash
         } else {
            throw new Error(`Failed to confirm transaction: ${error.message || "Unknown error"}`);

@@ -35,6 +35,8 @@ export default function BountyPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [veritasLogs, setVeritasLogs] = useState<string[]>([]);
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualId, setManualId] = useState("");
 
   useEffect(() => {
     if (bounty === null) {
@@ -102,6 +104,17 @@ export default function BountyPage() {
       toast.error("Failed to sync market: " + (error.message || "Unknown error"));
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualId) return;
+    try {
+        await updateMarketId({ bountyId: bounty._id, marketId: Number(manualId) });
+        toast.success("Market ID Updated Manually");
+        setShowManualInput(false);
+    } catch (e) {
+        toast.error("Failed to update Market ID");
     }
   };
 
@@ -239,15 +252,51 @@ export default function BountyPage() {
             )}
 
             {!bounty.marketId && bounty.creationTxnHash && (
-              <div className="bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2 font-bold">
-                  <ShieldAlert className="w-5 h-5" />
-                  <span>MARKET NOT SYNCED: This bounty is missing its On-Chain Market ID.</span>
+              <div className="bg-yellow-100 border-2 border-yellow-500 text-yellow-800 p-4 mb-4 flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-2 font-bold">
+                      <ShieldAlert className="w-5 h-5" />
+                      <span>MARKET NOT SYNCED: This bounty is missing its On-Chain Market ID.</span>
+                    </div>
+                    <div className="flex gap-2">
+                        <NeoButton size="sm" className="bg-yellow-500 text-black hover:bg-yellow-600" onClick={handleSyncMarket} disabled={isSyncing}>
+                          {isSyncing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                          {isSyncing ? "Syncing..." : "Sync Market ID"}
+                        </NeoButton>
+                        <NeoButton size="sm" variant="outline" onClick={() => setShowManualInput(!showManualInput)}>
+                            {showManualInput ? "Cancel" : "Manual Entry"}
+                        </NeoButton>
+                    </div>
                 </div>
-                <NeoButton size="sm" className="bg-yellow-500 text-black hover:bg-yellow-600" onClick={handleSyncMarket} disabled={isSyncing}>
-                  {isSyncing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                  {isSyncing ? "Syncing..." : "Sync Market ID"}
-                </NeoButton>
+                
+                {showManualInput && (
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-2 mt-2 border-t border-yellow-600/20 pt-2">
+                        <p className="text-xs md:text-sm">
+                            1. Find <strong>market_id</strong> in events on Explorer.<br/>
+                            2. Enter ID below.
+                        </p>
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <input 
+                                type="number" 
+                                placeholder="Market ID" 
+                                className="border-2 border-yellow-600 p-1 px-2 rounded-none text-sm w-24"
+                                value={manualId}
+                                onChange={(e) => setManualId(e.target.value)}
+                            />
+                            <NeoButton size="sm" onClick={handleManualSubmit} disabled={!manualId}>
+                                Save
+                            </NeoButton>
+                        </div>
+                        <a 
+                            href={`https://explorer.aptoslabs.com/txn/${bounty.creationTxnHash}?network=testnet`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs font-bold underline ml-2 hover:text-yellow-900"
+                        >
+                            View Transaction on Explorer
+                        </a>
+                    </div>
+                )}
               </div>
             )}
 
