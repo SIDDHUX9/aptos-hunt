@@ -94,12 +94,32 @@ export default function CreateBounty() {
       console.log("Transaction submitted:", response.hash);
       toast.loading("Waiting for transaction confirmation...", { duration: 5000 });
       
-      let committedTxn;
+      let committedTxn: any = null;
       let marketId: number | undefined = undefined;
       let txnHash = response.hash;
 
       try {
-        committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
+        // Custom polling logic instead of aptos.waitForTransaction
+        // This is more robust against node timeouts
+        let retries = 10;
+        while (retries > 0) {
+            try {
+                const txn = await aptos.getTransactionByHash({ transactionHash: response.hash });
+                if (txn.type !== "pending_transaction") {
+                    committedTxn = txn;
+                    break;
+                }
+            } catch (e) {
+                // Ignore 404s while pending
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+            retries--;
+        }
+
+        if (!committedTxn) {
+            // One last try with the SDK's waiter as a backup
+             committedTxn = await aptos.waitForTransaction({ transactionHash: response.hash });
+        }
         
         // @ts-ignore
         if (!committedTxn.success) {
