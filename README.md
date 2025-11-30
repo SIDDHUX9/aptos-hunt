@@ -369,21 +369,19 @@ The app will be available at `http://localhost:5173`
 Create a `.env.local` file in the root directory:
 
 \`\`\`env
-# ===== BLOCKCHAIN CONFIGURATION =====
+### BLOCKCHAIN CONFIGURATION
 VITE_APTOS_NETWORK=testnet
 VITE_APTOS_RPC_URL=https://api.testnet.aptos.dev/v1
 VITE_CONTRACT_ADDRESS=0x155e43ac5e3c045997eae5fc8ccbcf9ddcc8dbd77849e4e54a40aa7d9dfd9ba9
 
-# ===== AI VERIFICATION =====
+### AI VERIFICATION 
 VITE_VERITAS_API_KEY=your_veritas_api_key_here
 VITE_AI_VERIFICATION_URL=https://api.veritas-ai.com/v1/verify
 
-# ===== SHELBY PROTOCOL (DECENTRALIZED STORAGE) =====
+### SHELBY PROTOCOL (DECENTRALIZED STORAGE)
 VITE_SHELBY_API_KEY=aptoslabs_Lep6hBwxZpV_NfhJusjzsHqam8qu5T2WzhqSZ2GnfJqgW
 VITE_SHELBY_NETWORK=shelbynet
 
-# ===== ANALYTICS (OPTIONAL) =====
-VITE_ANALYTICS_ID=your_analytics_id
 \`\`\`
 
 ---
@@ -395,17 +393,17 @@ VITE_ANALYTICS_ID=your_analytics_id
 \`\`\`bash
 cd move/
 
-# Install Aptos CLI
+### Install Aptos CLI
 curl -fsSL "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v0.3.15/aptos-cli-0.3.15-Ubuntu-x86_64.zip" | unzip
 
-# Initialize your account (creates a keypair)
+### Initialize your account (creates a keypair)
 aptos init
 
-# Deploy the contract to testnet
+### Deploy the contract to testnet
 aptos move publish --named-addresses market_addr=YOUR_ADDRESS
 
-# Verify deployment on explorer
-# Visit: https://explorer.aptoslabs.com/account/YOUR_ADDRESS?network=testnet
+### Verify deployment on explorer
+### Visit: https://explorer.aptoslabs.com/account/YOUR_ADDRESS?network=testnet
 \`\`\`
 
 For complete setup instructions, see [SMART_CONTRACT_SETUP.md](./SMART_CONTRACT_SETUP.md)
