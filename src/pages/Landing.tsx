@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
-import { ArrowRight, Shield, Zap, Trophy, Wallet, Database } from "lucide-react";
+import { ArrowRight, Shield, Zap, Trophy, Wallet, Database, Moon, Sun } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 const TypewriterText = ({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) => {
   return (
@@ -79,16 +80,36 @@ const TypewriterCycle = ({
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
+    <div className="min-h-screen bg-background flex flex-col font-sans transition-colors">
       {/* Hero Section */}
-      <header className="border-b-4 border-black bg-white p-4 sticky top-0 z-50">
+      <header className="border-b-4 border-black dark:border-white bg-white dark:bg-black p-4 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto flex justify-between items-center">
           <div className="text-2xl font-black uppercase tracking-tighter">
             Deepfake<span className="text-primary">Hunters</span>
           </div>
-          <NeoButton onClick={() => navigate("/auth")}>Login to Hunt</NeoButton>
+          <div className="flex gap-2 items-center">
+            <NeoButton 
+              variant="outline" 
+              size="icon"
+              onClick={toggleTheme}
+              className="w-10 h-10"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </NeoButton>
+            <NeoButton onClick={() => navigate("/auth")}>Login to Hunt</NeoButton>
+          </div>
         </div>
       </header>
 
