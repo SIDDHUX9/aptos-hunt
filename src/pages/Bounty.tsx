@@ -324,28 +324,7 @@ export default function BountyPage() {
               ← Back to Dashboard
             </NeoButton>
             
-            {contractExists === false && (
-              <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-4 flex items-start gap-3">
-                  <ShieldAlert className="w-6 h-6 shrink-0 mt-1" />
-                  <div className="w-full">
-                      <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
-                      <p className="text-sm mb-2">
-                          Betting is disabled because the contract at <code>{MODULE_ADDRESS}::{MODULE_NAME}</code> is missing.
-                      </p>
-                      {contractCheckError && (
-                        <div className="bg-red-200 p-2 text-xs font-mono mb-2 border border-red-400">
-                          Error: {contractCheckError}
-                        </div>
-                      )}
-                      <div className="bg-black/10 p-2 rounded text-xs font-mono mb-1">
-                          aptos move publish --named-addresses deepfake_hunters=default
-                      </div>
-                      <p className="text-xs">
-                          Update <code>src/lib/aptos.ts</code> with the new address after deploying.
-                      </p>
-                  </div>
-              </div>
-            )}
+            {/* Contract check error removed to prevent blocking */}
 
             {isWrongNetwork && (
               <div className="bg-red-100 border-2 border-red-500 text-red-700 p-4 mb-4 flex justify-between items-center">
