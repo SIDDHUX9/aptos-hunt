@@ -1,6 +1,7 @@
 {
-  "file_paths": [
-    "src/pages/CreateBounty.tsx"
-  ],
-  "replace_files_in_context": false
+  "aptos": "@aptos-labs/ts-sdk", "@aptos-labs/wallet-adapter-react",
+  "convex": "convex", "@convex-dev/auth",
+  "ui": "framer-motion", "lucide-react", "@radix-ui/*",
+  "storage": "@shelby-protocol/sdk",
+  "styling": "tailwindcss", "clsx", "tailwind-merge"
 }
