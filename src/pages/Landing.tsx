@@ -91,7 +91,7 @@ export default function Landing() {
       {/* Hero Section */}
       <header className="border-b-4 border-black dark:border-white bg-white dark:bg-black p-4 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="text-2xl font-black uppercase tracking-tighter">
+          <div className="text-2xl font-black uppercase tracking-tighter text-foreground">
             Deepfake<span className="text-primary">Hunters</span>
           </div>
           <div className="flex gap-2 items-center">
@@ -115,7 +115,7 @@ export default function Landing() {
 
       <main className="flex-1">
         <section className="py-20 px-4 container mx-auto text-center">
-          <h1 className="text-6xl md:text-8xl font-black uppercase leading-none mb-6 min-h-[160px] md:min-h-[200px]">
+          <h1 className="text-6xl md:text-8xl font-black uppercase leading-none mb-6 min-h-[160px] md:min-h-[200px] text-foreground">
             <div className="block">
               <TypewriterText text="Hunt " delay={0} />
               <TypewriterCycle words={["Deepfakes", "AI Lies", "Synthetics", "Falsehoods"]} className="text-primary" delay={0.8} />
@@ -160,9 +160,9 @@ export default function Landing() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-20 bg-white border-y-4 border-black">
+        <section className="py-20 bg-white dark:bg-black border-y-4 border-black dark:border-white transition-colors">
           <div className="container mx-auto px-4">
-            <h2 className="text-4xl md:text-5xl font-black uppercase mb-4 text-center">How It Works</h2>
+            <h2 className="text-4xl md:text-5xl font-black uppercase mb-4 text-center text-foreground">How It Works</h2>
             <p className="text-center text-lg font-bold text-muted-foreground mb-16 max-w-2xl mx-auto">
               Join the fight against deepfakes in 4 simple steps. Earn crypto while protecting truth.
             </p>
@@ -175,15 +175,15 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
               >
-                <NeoCard className="bg-blue-50 border-blue-500 h-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white text-3xl font-black mb-4 border-2 border-black">
+                <NeoCard className="bg-blue-50 dark:bg-blue-950 border-blue-500 h-full">
+                  <div className="flex items-center justify-center w-16 h-16 bg-blue-500 text-white text-3xl font-black mb-4 border-2 border-black dark:border-white">
                     1
                   </div>
-                  <h3 className="text-2xl font-black uppercase mb-3 text-blue-700">Connect Wallet</h3>
-                  <p className="font-bold text-gray-700 mb-4">
+                  <h3 className="text-2xl font-black uppercase mb-3 text-blue-700 dark:text-blue-300">Connect Wallet</h3>
+                  <p className="font-bold text-gray-700 dark:text-gray-300 mb-4">
                     Link your Petra Wallet to the Aptos Testnet. Your wallet is your identity—no email required.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-blue-600 font-mono">
+                  <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-mono">
                     <Wallet className="w-4 h-4" />
                     <span>Petra Wallet Required</span>
                   </div>
@@ -197,15 +197,15 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
               >
-                <NeoCard className="bg-green-50 border-green-500 h-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white text-3xl font-black mb-4 border-2 border-black">
+                <NeoCard className="bg-green-50 dark:bg-green-950 border-green-500 h-full">
+                  <div className="flex items-center justify-center w-16 h-16 bg-green-500 text-white text-3xl font-black mb-4 border-2 border-black dark:border-white">
                     2
                   </div>
-                  <h3 className="text-2xl font-black uppercase mb-3 text-green-700">Create Bounty</h3>
-                  <p className="font-bold text-gray-700 mb-4">
+                  <h3 className="text-2xl font-black uppercase mb-3 text-green-700 dark:text-green-300">Create Bounty</h3>
+                  <p className="font-bold text-gray-700 dark:text-gray-300 mb-4">
                     Submit suspicious content (images/videos). We archive it on Shelby Protocol and create an on-chain market.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-green-600 font-mono">
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-mono">
                     <Database className="w-4 h-4" />
                     <span>Earn 10 PAT Tokens</span>
                   </div>
@@ -219,15 +219,15 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
               >
-                <NeoCard className="bg-yellow-50 border-yellow-500 h-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-yellow-500 text-white text-3xl font-black mb-4 border-2 border-black">
+                <NeoCard className="bg-yellow-50 dark:bg-yellow-950 border-yellow-500 h-full">
+                  <div className="flex items-center justify-center w-16 h-16 bg-yellow-500 text-white text-3xl font-black mb-4 border-2 border-black dark:border-white">
                     3
                   </div>
-                  <h3 className="text-2xl font-black uppercase mb-3 text-yellow-700">Place Bets</h3>
-                  <p className="font-bold text-gray-700 mb-4">
+                  <h3 className="text-2xl font-black uppercase mb-3 text-yellow-700 dark:text-yellow-300">Place Bets</h3>
+                  <p className="font-bold text-gray-700 dark:text-gray-300 mb-4">
                     Stake APT tokens on whether content is Real or AI-Generated. All bets are recorded on-chain.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-yellow-600 font-mono">
+                  <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 font-mono">
                     <Zap className="w-4 h-4" />
                     <span>Minimum 1 APT</span>
                   </div>
@@ -241,15 +241,15 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 }}
               >
-                <NeoCard className="bg-purple-50 border-purple-500 h-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-purple-500 text-white text-3xl font-black mb-4 border-2 border-black">
+                <NeoCard className="bg-purple-50 dark:bg-purple-950 border-purple-500 h-full">
+                  <div className="flex items-center justify-center w-16 h-16 bg-purple-500 text-white text-3xl font-black mb-4 border-2 border-black dark:border-white">
                     4
                   </div>
-                  <h3 className="text-2xl font-black uppercase mb-3 text-purple-700">Claim Rewards</h3>
-                  <p className="font-bold text-gray-700 mb-4">
+                  <h3 className="text-2xl font-black uppercase mb-3 text-purple-700 dark:text-purple-300">Claim Rewards</h3>
+                  <p className="font-bold text-gray-700 dark:text-gray-300 mb-4">
                     Veritas AI resolves the market. Winners split the losing pool proportionally. Claim your APT!
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-purple-600 font-mono">
+                  <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 font-mono">
                     <Trophy className="w-4 h-4" />
                     <span>Winner Takes All</span>
                   </div>
@@ -273,27 +273,27 @@ export default function Landing() {
         </section>
 
         {/* Features */}
-        <section className="py-20 bg-primary/5 border-y-4 border-black">
+        <section className="py-20 bg-primary/5 dark:bg-primary/10 border-y-4 border-black dark:border-white transition-colors">
           <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
-            <NeoCard className="bg-white rotate-1 hover:rotate-0 transition-transform">
+            <NeoCard className="bg-white dark:bg-card rotate-1 hover:rotate-0 transition-transform">
               <Shield className="w-12 h-12 mb-4 text-primary" />
-              <h3 className="text-2xl font-black uppercase mb-2">Verify Content</h3>
+              <h3 className="text-2xl font-black uppercase mb-2 text-foreground">Verify Content</h3>
               <p className="font-bold text-muted-foreground">
                 Use our Veritas Oracle to cryptographically prove if content is real or AI-generated.
               </p>
             </NeoCard>
             
-            <NeoCard className="bg-white -rotate-1 hover:rotate-0 transition-transform">
+            <NeoCard className="bg-white dark:bg-card -rotate-1 hover:rotate-0 transition-transform">
               <Zap className="w-12 h-12 mb-4 text-secondary" />
-              <h3 className="text-2xl font-black uppercase mb-2">Instant Rewards</h3>
+              <h3 className="text-2xl font-black uppercase mb-2 text-foreground">Instant Rewards</h3>
               <p className="font-bold text-muted-foreground">
                 Win APT for correct predictions and earn PAT tokens for every contribution.
               </p>
             </NeoCard>
             
-            <NeoCard className="bg-white rotate-1 hover:rotate-0 transition-transform">
+            <NeoCard className="bg-white dark:bg-card rotate-1 hover:rotate-0 transition-transform">
               <Trophy className="w-12 h-12 mb-4 text-accent" />
-              <h3 className="text-2xl font-black uppercase mb-2">Climb Ranks</h3>
+              <h3 className="text-2xl font-black uppercase mb-2 text-foreground">Climb Ranks</h3>
               <p className="font-bold text-muted-foreground">
                 Top hunters get exclusive access to high-stakes bounties and airdrops.
               </p>
@@ -303,7 +303,7 @@ export default function Landing() {
 
         {/* Live Bounties Preview */}
         <section className="py-20 container mx-auto px-4">
-          <h2 className="text-4xl font-black uppercase mb-12 text-center">Live Bounties</h2>
+          <h2 className="text-4xl font-black uppercase mb-12 text-center text-foreground">Live Bounties</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             {[
