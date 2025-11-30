@@ -106,7 +106,29 @@ export default function BountyPage() {
     setTxnStatus(null);
     try {
       toast.info("Fetching transaction details from chain...");
-      const txn = await aptos.getTransactionByHash({ transactionHash: bounty.creationTxnHash });
+      
+      // Add retry logic with better error handling
+      let txn;
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          txn = await aptos.getTransactionByHash({ transactionHash: bounty.creationTxnHash });
+          break;
+        } catch (err: any) {
+          retries--;
+          if (retries === 0) throw err;
+          if (err.message?.includes("Unauthorized") || err.message?.includes("401")) {
+            // Try with alternative endpoint
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          throw err;
+        }
+      }
+      
+      if (!txn) {
+        throw new Error("Failed to fetch transaction after retries");
+      }
       
       setDebugInfo(JSON.stringify(txn, null, 2));
       
