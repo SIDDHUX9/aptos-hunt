@@ -41,10 +41,19 @@ export default function BountyPage() {
   const [debugInfo, setDebugInfo] = useState<string>("");
   const [txnStatus, setTxnStatus] = useState<string | null>(null);
   const [contractExists, setContractExists] = useState<boolean | null>(null);
+  const [contractCheckError, setContractCheckError] = useState<string>("");
 
   // Check if contract exists on load
   useEffect(() => {
-    checkContract().then(exists => setContractExists(exists));
+    checkContract()
+      .then((result) => {
+        setContractExists(result.exists);
+        if (!result.exists) setContractCheckError(result.error || "Unknown error");
+      })
+      .catch(err => {
+        setContractExists(false);
+        setContractCheckError(err.message);
+      });
   }, []);
 
   useEffect(() => {
@@ -141,20 +150,6 @@ export default function BountyPage() {
                     if (change.data.type && change.data.type.includes("Market")) {
                         foundMarketId = Number(change.data.data.id);
                         break;
-                    }
-                }
-                
-                // NEW: Check for MarketStore updates (where markets are stored in a vector)
-                if (change.data.type && change.data.type.includes("MarketStore")) {
-                    const data = change.data.data;
-                    if (data.markets && Array.isArray(data.markets) && data.markets.length > 0) {
-                        // The new market is likely the last one in the list
-                        const lastMarket = data.markets[data.markets.length - 1];
-                        if (lastMarket && lastMarket.id !== undefined) {
-                            foundMarketId = Number(lastMarket.id);
-                            console.log("Found Market ID in MarketStore:", foundMarketId);
-                            break;
-                        }
                     }
                 }
             }
@@ -330,6 +325,11 @@ export default function BountyPage() {
                       <p className="text-sm mb-2">
                           Betting is disabled because the contract at <code>{MODULE_ADDRESS}::{MODULE_NAME}</code> is missing.
                       </p>
+                      {contractCheckError && (
+                        <div className="bg-red-200 p-2 text-xs font-mono mb-2 border border-red-400">
+                          Error: {contractCheckError}
+                        </div>
+                      )}
                       <div className="bg-black/10 p-2 rounded text-xs font-mono mb-1">
                           aptos move publish --named-addresses deepfake_hunters=default
                       </div>

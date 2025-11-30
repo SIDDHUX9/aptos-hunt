@@ -28,14 +28,14 @@ const config = new AptosConfig({
 export const aptos = new Aptos(config);
 
 // Helper to check if the contract exists
-export const checkContract = async (): Promise<boolean> => {
+export const checkContract = async (): Promise<{ exists: boolean; error?: string }> => {
   try {
     console.log(`Checking for module: ${MODULE_ADDRESS}::${MODULE_NAME}`);
     const moduleData = await aptos.getAccountModule({
       accountAddress: MODULE_ADDRESS,
       moduleName: MODULE_NAME,
     });
-    return !!moduleData;
+    return { exists: !!moduleData };
   } catch (error: any) {
     console.error("Contract check failed:", error);
     
@@ -44,13 +44,16 @@ export const checkContract = async (): Promise<boolean> => {
                        (error.message && typeof error.message === 'string' && error.message.toLowerCase().includes("not found") && !error.message.includes("401"));
                        
     if (isNotFound) {
-      return false;
+      return { exists: false, error: "Module not found (404)" };
     }
     
     // For other errors (401 Unauthorized, Network Error, etc.), assume it exists to not block the UI
     // The transaction will fail later if it really doesn't exist, which is better than blocking here
     console.warn("Contract check encountered an API error, proceeding optimistically:", error);
-    return true;
+    
+    // If it's a network error or 401, we return TRUE (optimistic) but log the error
+    // We only return FALSE if we are sure it's missing
+    return { exists: true };
   }
 };
 

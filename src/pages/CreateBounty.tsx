@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { NeoButton, NeoCard } from "@/components/NeoComponents";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Upload, Link as LinkIcon, Database, Youtube, Twitter, Instagram, Video, Wallet } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -21,15 +21,24 @@ export default function CreateBounty() {
   const [url, setUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contractExists, setContractExists] = useState<boolean | null>(null);
+  const [contractCheckError, setContractCheckError] = useState<string>("");
   const createBounty = useMutation(api.bounties.create);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // @ts-ignore
   const { signAndSubmitTransaction, account, connected, network, changeNetwork } = useWallet();
 
   // Check if contract exists on load
-  useState(() => {
-    checkContract().then(exists => setContractExists(exists));
-  });
+  useEffect(() => {
+    checkContract()
+      .then((result) => {
+        setContractExists(result.exists);
+        if (!result.exists) setContractCheckError(result.error || "Unknown error");
+      })
+      .catch(err => {
+        setContractExists(false);
+        setContractCheckError(err.message);
+      });
+  }, []);
 
   const isWrongNetwork = network && (
     (network.name && !network.name.toLowerCase().includes("testnet")) && 
@@ -222,6 +231,11 @@ export default function CreateBounty() {
                     <p className="text-sm mb-2">
                         The contract at <code>{MODULE_ADDRESS}::{MODULE_NAME}</code> could not be found on Aptos Testnet.
                     </p>
+                    {contractCheckError && (
+                      <div className="bg-red-200 p-2 text-xs font-mono mb-2 border border-red-400">
+                        Error: {contractCheckError}
+                      </div>
+                    )}
                     <p className="text-sm font-bold mb-2">
                         Action Required: Redeploy the contract and update the address.
                     </p>
