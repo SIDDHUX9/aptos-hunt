@@ -38,11 +38,7 @@ Once deployed, you need to update the frontend to point to your new contract add
 
 1.  **Update `src/lib/aptos.ts`**:
     - Add a constant for your module address:
-      ```typescript
-      export const MODULE_ADDRESS = "0xYOUR_DEPLOYED_ADDRESS";
-      export const MODULE_NAME = "market";
-      ```
-
+      
 2.  **Update `src/pages/Bounty.tsx`**:
     - Replace the simulated transaction logic with a call to your smart contract entry function.
     
@@ -78,4 +74,3 @@ You only need to run `aptos move publish` again if:
 **Important:** Every time you publish, you might get a new object address.
 1. Copy the new address from the terminal output.
 2. Update `src/lib/aptos.ts`:
-   

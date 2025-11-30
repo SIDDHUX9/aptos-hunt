@@ -314,7 +314,7 @@ export default function BountyPage() {
                   <div className="w-full">
                       <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
                       <p className="text-sm mb-2">
-                          Betting is disabled because the contract at <code>{MODULE_ADDRESS}</code> is missing.
+                          Betting is disabled because the contract at <code>{MODULE_ADDRESS}::{MODULE_NAME}</code> is missing.
                       </p>
                       <div className="bg-black/10 p-2 rounded text-xs font-mono mb-1">
                           aptos move publish --named-addresses deepfake_hunters=default

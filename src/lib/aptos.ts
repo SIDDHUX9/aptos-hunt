@@ -9,7 +9,7 @@ const API_KEY = import.meta.env.VITE_APTOS_API_KEY;
 
 // Address from 'aptos move publish' output
 export const MODULE_ADDRESS = "0x155e43ac5e3c045997eae5fc8ccbcf9ddcc8dbd77849e4e54a40aa7d9dfd9ba9";
-export const MODULE_NAME = "market";
+export const MODULE_NAME = "DeepfakeMarket";
 
 // Force Testnet configuration
 // Only use API_KEY if it is set and looks valid (not a placeholder)
@@ -36,9 +36,21 @@ export const checkContract = async (): Promise<boolean> => {
       moduleName: MODULE_NAME,
     });
     return !!moduleData;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Contract check failed:", error);
-    return false;
+    
+    // If it's a 404 (Not Found), then it really doesn't exist
+    const isNotFound = error.status === 404 || 
+                       (error.message && typeof error.message === 'string' && error.message.toLowerCase().includes("not found") && !error.message.includes("401"));
+                       
+    if (isNotFound) {
+      return false;
+    }
+    
+    // For other errors (401 Unauthorized, Network Error, etc.), assume it exists to not block the UI
+    // The transaction will fail later if it really doesn't exist, which is better than blocking here
+    console.warn("Contract check encountered an API error, proceeding optimistically:", error);
+    return true;
   }
 };
 

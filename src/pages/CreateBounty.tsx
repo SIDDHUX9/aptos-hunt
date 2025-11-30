@@ -220,7 +220,7 @@ export default function CreateBounty() {
                 <div className="w-full">
                     <h3 className="font-bold text-lg">Smart Contract Not Found</h3>
                     <p className="text-sm mb-2">
-                        The contract at <code>{MODULE_ADDRESS}</code> could not be found on Aptos Testnet.
+                        The contract at <code>{MODULE_ADDRESS}::{MODULE_NAME}</code> could not be found on Aptos Testnet.
                     </p>
                     <p className="text-sm font-bold mb-2">
                         Action Required: Redeploy the contract and update the address.
